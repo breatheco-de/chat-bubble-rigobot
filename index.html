@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,5 +9,22 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize the Rigobot
+        if (window.rigo) {
+          window.rigo.init("5ec6dfc30db24638a6f515f7e78c8513", {
+            hidden: false,
+            context: "THe user is called: ANDREINA. Please call her by her name",
+          });
+
+          window.rigo.show(false);
+
+          // window.rigo.hide();
+        } else {
+          console.error("window.rigo is not defined");
+        }
+      });
+    </script>
   </body>
 </html>

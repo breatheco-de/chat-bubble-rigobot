@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./ChatBubble.module.css";
 import { svgs } from "../../assets/svgs";
 import { io, Socket } from "socket.io-client";
+import MarkdownIt from "markdown-it";
 
 interface ChatHomeProps {
   setActiveSection: (section: string) => void;
@@ -51,27 +52,30 @@ const ChatFAQ = () => {
 
 interface ChatMessagesProps {
   aiImageUrl: string;
-  userImageUrl: string;
+  user: {
+    context: string;
+    token: string;
+    avatar: string;
+    nickname: string;
+  };
   host: string;
   purposeId: number;
   chatAgentHash: string;
-  rigoUserToken?: string;
-  socketHost: string; // Nueva propiedad para el host del socket
+  socketHost: string;
 }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   aiImageUrl,
-  userImageUrl,
+  user,
   host,
   purposeId,
   chatAgentHash,
-  rigoUserToken,
   socketHost,
 }) => {
   const [messages, setMessages] = useState([
-    { text: "Hi, welcome to Intercom 👋", sender: "ai" },
+    { text: "Hi, welcome to 4Geeks 👋", sender: "ai" },
     {
-      text: "You're speaking with Rigo AI Agent - I'm here to answer your questions. You can also talk to the team if you need to.",
+      text: "I'm Rigo AI and I'm here to answer your questions. Is there anything I can help with?",
       sender: "ai",
     },
   ]);
@@ -80,7 +84,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    if (!conversationId) return
+    if (!conversationId) return;
 
     const newSocket = io(socketHost, { autoConnect: false });
     setSocket(newSocket);
@@ -88,7 +92,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     newSocket.connect();
 
     const onStartData = {
-      token: rigoUserToken || chatAgentHash,
+      token: user.token || chatAgentHash,
       purpose: purposeId,
       conversationId: conversationId,
     };
@@ -100,7 +104,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     newSocket.on("response", (message) => {
       console.log("received a response ", message);
-      
+
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
         const lastMessageIndex = updatedMessages.length - 1;
@@ -122,13 +126,13 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   useEffect(() => {
     initConversation();
-  }, [host, purposeId, chatAgentHash, rigoUserToken]);
+  }, [host, purposeId, chatAgentHash, user.token]);
 
   const initConversation = async () => {
     const headers = {
       "Content-Type": "application/json",
       "Chat-Agent-Hash": chatAgentHash,
-      Authorization: `Token ${rigoUserToken || chatAgentHash}`,
+      Authorization: `Token ${user.token || chatAgentHash}`,
     };
 
     try {
@@ -144,7 +148,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
       const json = await res.json();
       setConversationId(json.conversation_id);
-      
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
     }
@@ -153,7 +156,11 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   const handleSendMessage = () => {
     if (inputValue.trim() && socket) {
       const messageData = {
-        message: { type: "user", text: inputValue },
+        message: {
+          type: "user",
+          text: inputValue,
+          context: user.context || "",
+        },
         conversation: {
           id: conversationId,
           purpose: purposeId,
@@ -179,10 +186,15 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   };
 
+  const md = new MarkdownIt();
+  const htmlFromMarkdown = (markdown: string) => {
+    return { __html: md.render(markdown) };
+  };
+
   return (
     <div>
       <div className={styles.header}>
-        <h2>Fin</h2>
+        <h2>Rigobot AI</h2>
       </div>
       <div className={styles.subHeader}>
         <img src={aiImageUrl} alt="AI Icon" className={styles.aiIcon} />
@@ -198,23 +210,18 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           >
             <span>
               {message.sender === "ai" ? (
-                <img
-                  src={aiImageUrl}
-                  alt="AI Icon"
-                  className={styles.messageIcon}
-                />
+                <div>{svgs.rigoSvg}</div>
               ) : (
-                <img
-                  src={userImageUrl}
-                  alt="User Icon"
-                  className={styles.messageIcon}
-                />
+                <div>{svgs.person}</div>
               )}
             </span>
-            <div className={styles.replyText}>
-              <p>{message.text}</p>
-              <span>{message.sender === "ai" ? "Bot" : "You"} · Just now.</span>
-            </div>
+            <div
+              className={styles.replyText}
+              dangerouslySetInnerHTML={htmlFromMarkdown(message.text)}
+            ></div>
+            {/* <span>
+              {message.sender === "ai" ? "Bot" : user.nickname} · Just now.
+            </span> */}
           </div>
         ))}
         <div className={styles.inputContainer}>
@@ -236,29 +243,34 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 };
 
 interface ChatBubbleProps {
-  logoUrl: string;
+  logoUrl?: string;
   aiImageUrl: string;
-  userImageUrl: string;
+  user: {
+    context: string;
+    token: string;
+    avatar: string;
+    nickname: string;
+  };
   welcomeMessage: string;
   host: string;
   purposeId: number;
   chatAgentHash: string;
-  rigoUserToken?: string;
-  socketHost: string; // Nueva propiedad para el host del socket
+  socketHost: string;
+  collapsed: boolean;
 }
 
 export const ChatBubble: React.FC<ChatBubbleProps> = ({
   logoUrl,
   aiImageUrl,
-  userImageUrl,
+  user,
   welcomeMessage,
   host,
   purposeId,
   chatAgentHash,
-  rigoUserToken,
   socketHost,
+  collapsed,
 }) => {
-  const [isChatVisible, setIsChatVisible] = useState(false);
+  const [isChatVisible, setIsChatVisible] = useState(collapsed);
   const [activeSection, setActiveSection] = useState("Home");
 
   const toggleChat = () => {
@@ -278,12 +290,11 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         return (
           <ChatMessages
             aiImageUrl={aiImageUrl}
-            userImageUrl={userImageUrl}
+            user={user}
             host={host}
             purposeId={purposeId}
             chatAgentHash={chatAgentHash}
-            rigoUserToken={rigoUserToken}
-            socketHost={socketHost} // Pasar la nueva propiedad
+            socketHost={socketHost}
           />
         );
       case "FAQ":
@@ -294,9 +305,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   };
 
   return (
-    <div >
+    <div>
       <div className={styles.chatButton} onClick={toggleChat}>
-        <img src={logoUrl} alt="Chat Icon" />
+        {logoUrl ? <img src={logoUrl} alt="Chat Icon" /> : svgs.rigoSvg}
       </div>
       {isChatVisible && (
         <div className={styles.chatContainer}>
