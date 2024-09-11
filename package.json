@@ -1,8 +1,11 @@
 {
-  "name": "chat-bubble",
-  "private": true,
-  "version": "0.0.0",
+  "name": "rigobot-chat-bubble",
+  "version": "0.0.8",
   "type": "module",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -10,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/lato": "^5.0.23",
     "markdown-it": "^14.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

@@ -7,25 +7,15 @@
     <title>Vite + React + TS</title>
   </head>
   <body>
-    <h3 id="chat-grow">hello</h3>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        // Initialize the Rigobot
         if (window.rigo) {
           window.rigo.init("5ec6dfc30db24638a6f515f7e78c8513", {
             hidden: false,
-            // target: "#chat-grow",
-            completions: [
-              {
-                prompt: "What is the name of the Data Science main director?",
-                answer:
-                  "The Data Science main director is Jenniffer Guzman",
-                DOMTarget: "#chat-grow",
-              },
-            ],
-            // introVideoUrl: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
-            introVideoUrl: "",
-            context: "THe user is called: Lulú",
+            context: "THe user is called: ANDREINA. Please call her by her name",
           });
 
           window.rigo.show(false);

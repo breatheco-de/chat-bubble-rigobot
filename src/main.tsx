@@ -1,18 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import ReactDOMClient from "react-dom/client";
 import "./index.css";
 import { ChatBubble } from "./components/ChatBubble/ChatBubble.tsx";
-
-interface User {
-  context: string;
-  token: string;
-  avatar: string;
-  nickname: string;
-}
+import { TCompletion } from "./types.ts";
 
 interface Options {
   hidden?: boolean;
   context?: string;
+  target?: string;
+  introVideoUrl?: string;
+  welcomeMessage?: string;
+  completions?: TCompletion[];
 }
 
 interface RigobotProps {
@@ -21,33 +19,41 @@ interface RigobotProps {
   collapsed: boolean;
 }
 
-const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options, collapsed }) => {
-  const [isVisible, setIsVisible] = useState(!options.hidden);
-  const [isCollapsed, setIsCollapsed] = useState(collapsed);
-  const [userContext, setUserContext] = useState(options.context || "");
+const Rigobot: React.FC<RigobotProps> = ({
+  chatAgentHash,
+  options,
+  collapsed,
+}) => {
+  const isVisible = !options.hidden;
+  const isCollapsed = collapsed;
+  const userContext = options.context || "";
+  let originElement = null;
 
+  if (options.target) {
+    originElement = document.querySelector(options.target);
+  }
   return (
     <>
       {isVisible && (
-        <div className="rigobot-container">
-          <div className="rigobot-chat">
-            <ChatBubble
-              aiImageUrl="vite.svg"
-              user={{
-                context: userContext,
-                token: chatAgentHash,
-                avatar: "",
-                nickname: "User",
-              }}
-              socketHost="http://localhost:8000"
-              welcomeMessage="Hello! I'm Rigo, your friendly AI assistant, how can I help you"
-              host="https://rigobot.herokuapp.com"
-              purposeId={1}
-              chatAgentHash={chatAgentHash}
-              collapsed={isCollapsed}
-            />
-          </div>
-        </div>
+        <ChatBubble
+          user={{
+            context: userContext,
+            token: chatAgentHash,
+            avatar: "",
+            nickname: "User",
+          }}
+          socketHost="https://ai.4geeks.com"
+          welcomeMessage={
+            options.welcomeMessage || "Hi! How can I help you! 👋"
+          }
+          host="https://rigobot.herokuapp.com"
+          purposeId={1}
+          chatAgentHash={chatAgentHash}
+          collapsed={isCollapsed}
+          originElement={originElement}
+          introVideoUrl={options.introVideoUrl || ""}
+          completions={options.completions}
+        />
       )}
     </>
   );
@@ -57,7 +63,13 @@ interface Rigo {
   init: (token: string, options?: Options) => void;
   show: (collapsed?: boolean) => void;
   hide: () => void;
-  updateContext: ({ override, payload }: { override?: boolean; payload: string }) => void;
+  updateContext: ({
+    override,
+    payload,
+  }: {
+    override?: boolean;
+    payload: string;
+  }) => void;
   container?: HTMLElement;
   options?: Options;
   token?: string;
@@ -106,7 +118,9 @@ window.rigo = {
   },
   updateContext: function ({ override = true, payload }) {
     if (this.root) {
-      const newContext = override ? payload : `${this.options!.context} ${payload}`;
+      const newContext = override
+        ? payload
+        : `${this.options!.context} ${payload}`;
       this.options!.context = newContext;
       this.root.render(
         <React.StrictMode>

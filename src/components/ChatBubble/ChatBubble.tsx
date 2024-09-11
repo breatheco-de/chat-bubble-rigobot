@@ -1,83 +1,136 @@
+import "@fontsource/lato";
+
 import React, { useState, useEffect } from "react";
-import styles from "./ChatBubble.module.css";
+
 import { svgs } from "../../assets/svgs";
 import { io, Socket } from "socket.io-client";
-import MarkdownIt from "markdown-it";
+import { ChatBubbleProps, ChatMessagesProps } from "../../types";
 
-interface ChatHomeProps {
-  setActiveSection: (section: string) => void;
-  welcomeMessage: string;
+function extractMovetoContent(text: string): {
+  contentInside: string | null;
+  textWithoutTags: string;
+} {
+  const movetoRegex = /<moveto>(.*?)<\/moveto>/;
+  const match = text.match(movetoRegex);
+
+  let contentInside = null;
+  let textWithoutTags = text;
+
+  if (match && match[1]) {
+    contentInside = match[1];
+    textWithoutTags = text.replace(movetoRegex, "");
+  }
+
+  return { contentInside, textWithoutTags };
 }
 
-const ChatHome: React.FC<ChatHomeProps> = ({
-  setActiveSection,
-  welcomeMessage,
-}) => {
-  return (
-    <div>
-      <div className={styles.header}>
-        <h2>{welcomeMessage}</h2>
-      </div>
-      <div
-        className={styles.askQuestion}
-        onClick={() => setActiveSection("Messages")}
-      >
-        <p>Ask a question</p>
-      </div>
-    </div>
-  );
+const rootVariables = {
+  activeColor: "#0084FF",
+  successColor: "#25BF6C",
+  softBlue: "#EEF9FE",
+  lightGrey: "#DADADA",
+  backgroundGreyLight: "#F9F9F9",
 };
 
-const ChatFAQ = () => {
-  return (
-    <div>
-      <div className={styles.header}>
-        <h2>Help</h2>
-        <input
-          type="text"
-          placeholder="Search articles..."
-          className={styles.searchInput}
-        />
-      </div>
-      <div className={styles.articles}>
-        <div className={styles.article}>Article 1: How to use the chat</div>
-        <div className={styles.article}>
-          Article 2: Troubleshooting common issues
-        </div>
-        <div className={styles.article}>Article 3: Contact support</div>
-      </div>
-    </div>
-  );
+const chatStyles = {
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "10px",
+    background: rootVariables.activeColor,
+    borderTopLeftRadius: "10px",
+    borderTopRightRadius: "10px",
+    boxSizing: "border-box",
+  },
+  chatContainer: {
+    width: "400px",
+    borderRadius: "10px",
+    boxShadow: "0 1px 5px rgba(0, 0, 0, 0.5)",
+    maxHeight: "80vh",
+    boxSizing: "border-box",
+    fontFamily: "'Lato', sans-serif",
+  },
+  bubble: {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    width: "50px",
+    height: "50px",
+    background: rootVariables.activeColor,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+  },
+  onlineCircle: {
+    width: "10px",
+    height: "10px",
+    background: rootVariables.successColor,
+    position: "absolute",
+    border: "1px solid white",
+    top: "70%",
+    borderRadius: "50vh",
+    left: "70%",
+  },
+  thumbnail: {
+    position: "relative",
+    border: "2px solid white",
+    borderRadius: "50vh",
+    padding: "4px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background: rootVariables.activeColor,
+  },
+  messagesContainer: {
+    padding: "16px",
+    paddingBottom: "100px",
+    overflowY: "scroll",
+    height: "100%",
+    boxSizing: "border-box",
+    fontFamily: "'Lato', sans-serif",
+    scrollbarWidth: "none",
+  },
 };
 
-interface ChatMessagesProps {
-  aiImageUrl: string;
-  user: {
-    context: string;
-    token: string;
-    avatar: string;
-    nickname: string;
+const getContainerPosition = (): object => {
+  return {
+    position: "fixed",
+    bottom: "80px",
+    right: "20px",
   };
-  host: string;
-  purposeId: number;
-  chatAgentHash: string;
-  socketHost: string;
-}
+};
+
+const getBubbleStyles = (rootElement: Element) => {
+  if (!rootElement) {
+    return chatStyles.bubble;
+  } else {
+    const rect = rootElement.getBoundingClientRect();
+    return {
+      ...chatStyles.bubble,
+      top: `${rect.bottom}px`, // Distancia entre el final del bloque y la parte superior de la ventana gráfica
+      left: `${rect.left}px`,
+    };
+  }
+};
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
-  aiImageUrl,
   user,
   host,
   purposeId,
   chatAgentHash,
   socketHost,
+  closeChat,
+  welcomeMessage,
+  completions,
 }) => {
+  console.log(completions);
+
   const [messages, setMessages] = useState([
-    { text: "Hi, welcome to 4Geeks 👋", sender: "ai" },
-    {
-      text: "I'm Rigo AI and I'm here to answer your questions. Is there anything I can help with?",
-      sender: "ai",
-    },
+    { text: welcomeMessage, sender: "ai" },
+    { text: "Hello bro", sender: "user" },
   ]);
   const [inputValue, setInputValue] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -103,7 +156,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     });
 
     newSocket.on("response", (message) => {
-      console.log("received a response ", message);
+      // console.log("received a response ", message);
 
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
@@ -115,7 +168,16 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     newSocket.on("responseFinished", (data) => {
       if (data.status === "ok") {
-        console.log("Response finished");
+        setMessages((prevMessages) => {
+          const updatedMessages = [...prevMessages];
+          const lastMessageIndex = updatedMessages.length - 1;
+          const message = updatedMessages[lastMessageIndex];
+          const result = extractMovetoContent(message.text);
+          updatedMessages[lastMessageIndex].text = result.textWithoutTags;
+          console.log(result.contentInside);
+          
+          return updatedMessages;
+        });
       }
     });
 
@@ -153,13 +215,36 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   };
 
+  const createContext = () => {
+    let innerContext = `
+    This context is related to the user or the environment:
+    """
+    ${user.context}
+    """
+
+    Think about the following completions (if available) as a source of proven information about the website in general. If the user message can be answered using one of the following completions, return its answer.
+    """
+    ${JSON.stringify(completions)}
+    """
+
+    In the cases where you use one of the (always one at a time) please return inside an xml <moveto> like the follwing at the end of your response: 
+    <moveto>DOMTarget</moveto>
+
+    This will move the chat bubble where your answer are being displayed to an element the user should see. THIS IS MANDATORY is you are using information from the provided completions.
+    Inside the XML tag must be DOMTarget selector is provided. Else please do not add the XML tag.
+    `;
+    console.log("CONTEXT TO QUERY: ", innerContext);
+
+    return innerContext;
+  };
+
   const handleSendMessage = () => {
     if (inputValue.trim() && socket) {
       const messageData = {
         message: {
           type: "user",
           text: inputValue,
-          context: user.context || "",
+          context: createContext(),
         },
         conversation: {
           id: conversationId,
@@ -186,82 +271,112 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   };
 
-  const md = new MarkdownIt();
-  const htmlFromMarkdown = (markdown: string) => {
-    return { __html: md.render(markdown) };
-  };
-
   return (
-    <div>
-      <div className={styles.header}>
-        <h2>Rigobot AI</h2>
+    <div
+      style={{
+        position: "relative",
+        height: "500px",
+        paddingBottom: "100px",
+        overflowY: "hidden",
+      }}
+    >
+      {/* @ts-ignore */}
+      <div style={chatStyles.header}>
+        <section>
+          <RigoThumbnail withOnline={true} />
+        </section>
+        <section>
+          <span onClick={closeChat}>{svgs.cancel}</span>
+        </section>
       </div>
-      <div className={styles.subHeader}>
-        <img src={aiImageUrl} alt="AI Icon" className={styles.aiIcon} />
-        <p>AI Agent answers instantly</p>
-      </div>
-      <div className={styles.messageContainer}>
+      {/* @ts-ignore */}
+      <div className="chat-messages" style={chatStyles.messagesContainer}>
         {messages.map((message, index) => (
           <div
             key={index}
-            className={`${styles.message} ${
-              message.sender === "ai" ? styles.aiMessage : styles.userMessage
-            }`}
+            style={{
+              background: "",
+              color: "black",
+              display: "flex",
+              gap: "6px",
+              marginBottom: "10px",
+              alignItems: "center",
+
+              flexDirection: `${
+                message.sender === "ai" ? "row" : "row-reverse"
+              }`,
+            }}
           >
-            <span>
-              {message.sender === "ai" ? (
-                <div>{svgs.rigoSvg}</div>
-              ) : (
+            {message.sender === "ai" ? (
+              <>
+                <RigoThumbnail />
+                <div
+                  style={{
+                    color: rootVariables.activeColor,
+                    background: rootVariables.softBlue,
+                    padding: "10px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {message.text}
+                </div>
+              </>
+            ) : (
+              <>
                 <div>{svgs.person}</div>
-              )}
-            </span>
-            <div
-              className={styles.replyText}
-              dangerouslySetInnerHTML={htmlFromMarkdown(message.text)}
-            ></div>
-            {/* <span>
-              {message.sender === "ai" ? "Bot" : user.nickname} · Just now.
-            </span> */}
+                <div
+                  style={{
+                    color: "black",
+                    background: `#F5F5F5`,
+                    padding: "10px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {message.text}
+                </div>
+              </>
+            )}
           </div>
         ))}
-        <div className={styles.inputContainer}>
-          <input
-            type="text"
-            placeholder="Ask a question..."
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyUp={handleKeyUp}
-            className={styles.messageInput}
-          />
-          <button onClick={handleSendMessage} className={styles.sendButton}>
-            {svgs.send}
-          </button>
-        </div>
+      </div>
+      <div
+        style={{
+          background: rootVariables.softBlue,
+          padding: "16px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "10px",
+          position: "absolute",
+          bottom: "0",
+          width: "100%",
+          borderBottomLeftRadius: "10px",
+          borderBottomRightRadius: "10px",
+          boxSizing: "border-box",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Ask Rigobot..."
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyUp={handleKeyUp}
+          style={{
+            padding: "10px",
+            width: "100%",
+            borderRadius: "11px",
+            border: `1px solid ${rootVariables.lightGrey}`,
+            color: "black",
+            outline: `1px solid ${rootVariables.lightGrey}`,
+          }}
+        />
+        <span onClick={handleSendMessage}>{svgs.send}</span>
       </div>
     </div>
   );
 };
 
-interface ChatBubbleProps {
-  logoUrl?: string;
-  aiImageUrl: string;
-  user: {
-    context: string;
-    token: string;
-    avatar: string;
-    nickname: string;
-  };
-  welcomeMessage: string;
-  host: string;
-  purposeId: number;
-  chatAgentHash: string;
-  socketHost: string;
-  collapsed: boolean;
-}
-
 export const ChatBubble: React.FC<ChatBubbleProps> = ({
-  logoUrl,
-  aiImageUrl,
   user,
   welcomeMessage,
   host,
@@ -269,76 +384,116 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   chatAgentHash,
   socketHost,
   collapsed,
+  originElement,
+  introVideoUrl,
+  completions,
 }) => {
   const [isChatVisible, setIsChatVisible] = useState(collapsed);
-  const [activeSection, setActiveSection] = useState("Home");
 
   const toggleChat = () => {
     setIsChatVisible(!isChatVisible);
   };
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case "Home":
-        return (
-          <ChatHome
-            setActiveSection={setActiveSection}
-            welcomeMessage={welcomeMessage}
-          />
-        );
-      case "Messages":
-        return (
+  return (
+    <>
+      {/* @ts-ignore  */}
+      <div style={getBubbleStyles(originElement)} onClick={toggleChat}>
+        <RigoThumbnail />
+      </div>
+
+      {isChatVisible && introVideoUrl && (
+        <div
+          style={{
+            ...getContainerPosition(),
+            display: "flex",
+            background: rootVariables.backgroundGreyLight,
+            padding: "8px",
+            gap: "16px",
+            borderRadius: "10px",
+          }}
+        >
+          <VideoDisplay videoSrc={introVideoUrl} />
+          {/* @ts-ignore */}
+          <div style={chatStyles.chatContainer}>
+            <ChatMessages
+              user={user}
+              host={host}
+              purposeId={purposeId}
+              chatAgentHash={chatAgentHash}
+              socketHost={socketHost}
+              closeChat={toggleChat}
+              welcomeMessage={welcomeMessage}
+              completions={completions}
+            />
+          </div>
+        </div>
+      )}
+      {isChatVisible && !introVideoUrl && (
+        // @ts-ignore
+        <div style={{ ...chatStyles.chatContainer, ...getContainerPosition() }}>
           <ChatMessages
-            aiImageUrl={aiImageUrl}
             user={user}
             host={host}
             purposeId={purposeId}
             chatAgentHash={chatAgentHash}
             socketHost={socketHost}
+            closeChat={toggleChat}
+            welcomeMessage={welcomeMessage}
+            completions={completions}
           />
-        );
-      case "FAQ":
-        return <ChatFAQ />;
-      default:
-        return null;
-    }
+        </div>
+      )}
+    </>
+  );
+};
+
+const RigoThumbnail = ({ withOnline = false }) => {
+  return (
+    // @ts-ignore
+    <div style={chatStyles.thumbnail}>
+      {svgs.rigoSvg}
+      {withOnline && (
+        <div
+          // @ts-ignore
+          style={chatStyles.onlineCircle}
+        ></div>
+      )}
+    </div>
+  );
+};
+
+const VideoDisplay = ({ videoSrc }: { videoSrc: string }) => {
+  const isYouTubeUrl = (url: string) => {
+    const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
+    return youtubeRegex.test(url);
   };
+
+  const getYouTubeId = (url: string) => {
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
+  if (isYouTubeUrl(videoSrc)) {
+    const videoId = getYouTubeId(videoSrc);
+    return (
+      <div style={{ flexGrow: 1 }}>
+        <iframe
+          width="100%"
+          height="100%"
+          src={`https://www.youtube.com/embed/${videoId}`}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div className={styles.chatButton} onClick={toggleChat}>
-        {logoUrl ? <img src={logoUrl} alt="Chat Icon" /> : svgs.rigoSvg}
-      </div>
-      {isChatVisible && (
-        <div className={styles.chatContainer}>
-          {renderSection()}
-          <div className={styles.footer}>
-            <button
-              onClick={() => setActiveSection("Home")}
-              className={activeSection === "Home" ? styles.activeButton : ""}
-            >
-              {svgs.home}
-              Home
-            </button>
-            <button
-              onClick={() => setActiveSection("Messages")}
-              className={
-                activeSection === "Messages" ? styles.activeButton : ""
-              }
-            >
-              {svgs.messages}
-              Messages
-            </button>
-            <button
-              onClick={() => setActiveSection("FAQ")}
-              className={activeSection === "FAQ" ? styles.activeButton : ""}
-            >
-              {svgs.faq}
-              FAQ
-            </button>
-          </div>
-        </div>
-      )}
+      <video src={videoSrc} controls></video>
     </div>
   );
 };
