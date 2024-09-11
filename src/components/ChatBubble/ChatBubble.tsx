@@ -1,6 +1,6 @@
 import "@fontsource/lato";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { svgs } from "../../assets/svgs";
 import { io, Socket } from "socket.io-client";
@@ -30,6 +30,7 @@ const rootVariables = {
   softBlue: "#EEF9FE",
   lightGrey: "#DADADA",
   backgroundGreyLight: "#F9F9F9",
+  backdropBG: "#00000060",
 };
 
 const chatStyles = {
@@ -92,6 +93,7 @@ const chatStyles = {
     boxSizing: "border-box",
     fontFamily: "'Lato', sans-serif",
     scrollbarWidth: "none",
+    background: "white",
   },
 };
 
@@ -125,6 +127,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   closeChat,
   welcomeMessage,
   completions,
+  backdropRef,
 }) => {
   console.log(completions);
 
@@ -174,8 +177,30 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           const message = updatedMessages[lastMessageIndex];
           const result = extractMovetoContent(message.text);
           updatedMessages[lastMessageIndex].text = result.textWithoutTags;
-          console.log(result.contentInside);
-          
+
+          if (result.contentInside) {
+            let targetElement = document.querySelector(result.contentInside);
+            // let targetElement = document.querySelector("#chat-grow");
+            if (targetElement) {
+              // @ts-ignore
+              targetElement.style.border = "2px solid red";
+
+              if (backdropRef.current) {
+                // Show the backdrop
+                backdropRef.current.style.opacity = "0.3";
+              }
+
+              // Hide the backdrop and remove the border after 0.5 seconds
+              setTimeout(() => {
+                if (backdropRef.current) {
+                  backdropRef.current.style.opacity = "0";
+                }
+                // @ts-ignore
+                targetElement.style.border = "none";
+              }, 1000);
+            }
+          }
+
           return updatedMessages;
         });
       }
@@ -389,13 +414,26 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   completions,
 }) => {
   const [isChatVisible, setIsChatVisible] = useState(collapsed);
-
+  const backdropRef = useRef(null);
   const toggleChat = () => {
     setIsChatVisible(!isChatVisible);
   };
 
   return (
     <>
+      <div
+        ref={backdropRef}
+        style={{
+          position: "fixed",
+          width: "100%",
+          height: "100vh",
+          background: rootVariables.backdropBG,
+          left: "0px",
+          top: "0px",
+          opacity: "0",
+          transition: "all 0.8s",
+        }}
+      ></div>
       {/* @ts-ignore  */}
       <div style={getBubbleStyles(originElement)} onClick={toggleChat}>
         <RigoThumbnail />
@@ -424,6 +462,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               closeChat={toggleChat}
               welcomeMessage={welcomeMessage}
               completions={completions}
+              backdropRef={backdropRef}
             />
           </div>
         </div>
@@ -440,6 +479,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
             closeChat={toggleChat}
             welcomeMessage={welcomeMessage}
             completions={completions}
+            backdropRef={backdropRef}
           />
         </div>
       )}

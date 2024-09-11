@@ -18,6 +18,7 @@ export interface ChatMessagesProps {
   closeChat: () => void;
   welcomeMessage: string;
   completions?: TCompletion[];
+  backdropRef: any
 }
 
 export interface ChatBubbleProps {
