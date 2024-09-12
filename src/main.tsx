@@ -5,63 +5,70 @@ import { ChatBubble } from "./components/ChatBubble/ChatBubble.tsx";
 import { TCompletion } from "./types.ts";
 
 interface Options {
-  hidden?: boolean;
-  context?: string;
   target?: string;
-  introVideoUrl?: string;
   welcomeMessage?: string;
+  context?: string;
+  introVideoUrl?: string;
   completions?: TCompletion[];
+  showBubble?: boolean;
+  collapsed?: boolean;
 }
+
+type TInitOpts = {
+  completions?: TCompletion[];
+  context?: string;
+  introVideoUrl?: string;
+};
 
 interface RigobotProps {
   chatAgentHash: string;
   options: Options;
-  collapsed: boolean;
 }
 
-const Rigobot: React.FC<RigobotProps> = ({
-  chatAgentHash,
-  options,
-  collapsed,
-}) => {
-  const isVisible = !options.hidden;
-  const isCollapsed = collapsed;
+const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
+  const isCollapsed = !Boolean(options.collapsed);
   const userContext = options.context || "";
   let originElement = null;
 
   if (options.target) {
     originElement = document.querySelector(options.target);
   }
-  return (
-    <>
-      {isVisible && (
-        <ChatBubble
-          user={{
-            context: userContext,
-            token: chatAgentHash,
-            avatar: "",
-            nickname: "User",
-          }}
-          socketHost="https://ai.4geeks.com"
-          welcomeMessage={
-            options.welcomeMessage || "Hi! How can I help you! 👋"
-          }
-          host="https://rigobot.herokuapp.com"
-          purposeId={1}
-          chatAgentHash={chatAgentHash}
-          collapsed={isCollapsed}
-          originElement={originElement}
-          introVideoUrl={options.introVideoUrl || ""}
-          completions={options.completions}
-        />
-      )}
-    </>
-  );
+
+  return options.showBubble ? (
+    <ChatBubble
+      user={{
+        context: userContext,
+        token: chatAgentHash,
+        avatar: "",
+        nickname: "User",
+      }}
+      socketHost="https://ai.4geeks.com"
+      welcomeMessage={options.welcomeMessage || "Hi! How can I help you! 👋"}
+      host="https://rigobot.herokuapp.com"
+      purposeId={1}
+      chatAgentHash={chatAgentHash}
+      collapsed={isCollapsed}
+      originElement={originElement}
+      introVideoUrl={options.introVideoUrl || ""}
+      completions={options.completions}
+    />
+  ) : null;
 };
 
 interface Rigo {
-  init: (token: string, options?: Options) => void;
-  show: (collapsed?: boolean) => void;
+  init: (token: string, options?: TInitOpts) => void;
+  show: (params: {
+    showBubble: boolean;
+    target?: string;
+    bubblePosition: {
+      top?: string;
+      left?: string;
+      right?: string;
+      bottom?: string;
+    };
+    collapsed?: boolean;
+    welcomeMessage?: string;
+  }) => void;
   hide: () => void;
   updateContext: ({
     override,
@@ -90,23 +97,19 @@ window.rigo = {
     this.container = container;
     this.options = options;
     this.token = token;
-
-    this.root = ReactDOMClient.createRoot(container);
-    this.root.render(
-      <React.StrictMode>
-        <Rigobot chatAgentHash={token} options={options} collapsed={true} />
-      </React.StrictMode>
-    );
   },
-  show: function (collapsed = false) {
-    if (this.container && this.root) {
+  show: function (showOpts) {
+    if (this.container) {
+      const options = {
+        ...this.options,
+        ...showOpts,
+        collapsed: typeof showOpts.collapsed === "boolean" ? showOpts.collapsed : true
+      };
+
+      this.root = ReactDOMClient.createRoot(this.container);
       this.root.render(
         <React.StrictMode>
-          <Rigobot
-            chatAgentHash={this.token!}
-            options={this.options!}
-            collapsed={collapsed}
-          />
+          <Rigobot chatAgentHash={this.token!} options={options} />
         </React.StrictMode>
       );
     }
@@ -127,7 +130,6 @@ window.rigo = {
           <Rigobot
             chatAgentHash={this.token!}
             options={{ ...this.options!, context: newContext }}
-            collapsed={true}
           />
         </React.StrictMode>
       );

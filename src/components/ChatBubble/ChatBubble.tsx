@@ -129,11 +129,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   completions,
   backdropRef,
 }) => {
-  console.log(completions);
-
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
-    { text: "Hello bro", sender: "user" },
   ]);
   const [inputValue, setInputValue] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);

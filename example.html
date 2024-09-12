@@ -4,27 +4,48 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <title>Rigobot Bubble</title>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- <h3 id="chat-grow">hello</h3> -->
     <script type="module" src="/src/main.tsx"></script>
-    <script>
+    <!-- <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Initialize the Rigobot
+        console.log("Initializing Rigobot bubble");
         if (window.rigo) {
+          console.log("The Window object has a Rigo instance in window.rigo");
           window.rigo.init("5ec6dfc30db24638a6f515f7e78c8513", {
-            hidden: false,
-            context: "THe user is called: ANDREINA. Please call her by her name",
+            completions: [
+              {
+                prompt: "What is the name of the Data Science main director?",
+                answer: "The Data Science main director is Jenniffer Guzman",
+                DOMTarget: "#chat-grow",
+              },
+            ],
+            
+            // introVideoUrl: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
+            context: "THe user is called: Lulú",
           });
-
-          window.rigo.show(false);
+          
+          window.rigo.show({
+            // target: "#chat-grow",
+            // showBubble: true,
+            // collapsed: false,
+            // completions: [
+            //   {
+            //     prompt: "What is the name of the Culture director?",
+            //     answer: "The Culture director is Ariana Sanchez",
+            //     DOMTarget: "#chat-grow",
+            //   },
+            // ],
+            // welcomeMessage: "I love punk",
+          });
 
           // window.rigo.hide();
         } else {
           console.error("window.rigo is not defined");
         }
       });
-    </script>
+    </script> -->
   </body>
 </html>
