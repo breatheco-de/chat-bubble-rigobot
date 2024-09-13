@@ -124,7 +124,7 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
 
 ### Options
 
-```
+```json
 {
      showBubble: true, // optional, it can be combined with "collapsed" to cofigure how rigobot displays on the website
      target: "", // optional, the bubble or the conversation window (if showBubble=false) will tooltip from here.
