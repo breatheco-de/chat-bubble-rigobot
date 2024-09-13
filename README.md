@@ -124,13 +124,23 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
 
 ### Options
 
-- `target`: The DOM element where the chat bubble should be attached.
-- `welcomeMessage`: The welcome message displayed in the chat bubble.
-- `context`: The context information related to the user or environment.
-- `introVideoUrl`: The URL of the introductory video.
-- `completions`: An array of completion objects containing `prompt`, `answer`, and `DOMTarget`.
-- `showBubble`: A boolean indicating whether to show the chat bubble.
-- `collapsed`: A boolean indicating whether the chat bubble should be collapsed (closed) initially.
+```
+{
+     showBubble: true, // optional, it can be combined with "collapsed" to cofigure how rigobot displays on the website
+     target: "", // optional, the bubble or the conversation window (if showBubble=false) will tooltip from here.
+     collapsed: false, // optional, whether the chat bubble should be collapsed (closed) initially. It must be set with showBubble=true.
+
+     bubblePosition: { // optional
+       top: "10px",
+       left: "10px",
+     },
+     introVideoUrl: "", // optional, The URL of the introductory video.
+     welcomeMessage: "I love punk", // optional, if null it will get the salutation message from the purpose
+     purposeSlug: "", // optional string, defaults to the first purpose in the organization,
+     completions: [], // optional array, additional context for the chat, completion object must have properties `prompt`, `answer`, and `DOMTarget`.
+     context: "", // optional string, additional context for the chat
+}
+```
 
 ### Methods
 
