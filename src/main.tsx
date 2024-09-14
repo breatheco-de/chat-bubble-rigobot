@@ -2,28 +2,8 @@ import React from "react";
 import ReactDOMClient from "react-dom/client";
 import "./index.css";
 import { ChatBubble } from "./components/ChatBubble/ChatBubble.tsx";
-import { TCompletion } from "./types.ts";
-
-interface Options {
-  target?: string;
-  welcomeMessage?: string;
-  context?: string;
-  introVideoUrl?: string;
-  completions?: TCompletion[];
-  showBubble?: boolean;
-  collapsed?: boolean;
-}
-
-type TInitOpts = {
-  completions?: TCompletion[];
-  context?: string;
-  introVideoUrl?: string;
-};
-
-interface RigobotProps {
-  chatAgentHash: string;
-  options: Options;
-}
+import { Options, RigobotProps } from "./types.ts";
+import { logger } from "./utils/utilities.ts";
 
 const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   const isCollapsed = !Boolean(options.collapsed);
@@ -34,7 +14,10 @@ const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
     originElement = document.querySelector(options.target);
   }
 
-  return options.showBubble ? (
+  logger.debug("Starting Rigobot with the following options");
+  logger.debug(`${JSON.stringify(options)}`);
+
+  return (
     <ChatBubble
       user={{
         context: userContext,
@@ -45,30 +28,20 @@ const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
       socketHost="https://ai.4geeks.com"
       welcomeMessage={options.welcomeMessage || "Hi! How can I help you! 👋"}
       host="https://rigobot.herokuapp.com"
-      purposeId={1}
+      purposeId={options.purposeId ? options.purposeId : 1}
       chatAgentHash={chatAgentHash}
       collapsed={isCollapsed}
       originElement={originElement}
-      introVideoUrl={options.introVideoUrl || ""}
+      introVideo={options.introVideo}
       completions={options.completions}
+      showBubble={options.showBubble}
     />
-  ) : null;
+  );
 };
 
 interface Rigo {
-  init: (token: string, options?: TInitOpts) => void;
-  show: (params: {
-    showBubble: boolean;
-    target?: string;
-    bubblePosition: {
-      top?: string;
-      left?: string;
-      right?: string;
-      bottom?: string;
-    };
-    collapsed?: boolean;
-    welcomeMessage?: string;
-  }) => void;
+  init: (token: string, options?: Options) => void;
+  show: (params: Options) => void;
   hide: () => void;
   updateContext: ({
     override,
@@ -91,6 +64,13 @@ declare global {
 
 window.rigo = {
   init: function (token, options = {}) {
+    let loglevel = "info";
+    if (options.loglevel) {
+      loglevel = options.loglevel;
+    }
+    logger.init(loglevel);
+
+    logger.info("Initializing Rigobot!");
     const container = document.createElement("div");
     document.body.appendChild(container);
 
@@ -99,27 +79,46 @@ window.rigo = {
     this.token = token;
   },
   show: function (showOpts) {
+    logger.debug("Trying to show Rigobot");
     if (this.container) {
       const options = {
         ...this.options,
         ...showOpts,
-        collapsed: typeof showOpts.collapsed === "boolean" ? showOpts.collapsed : true
+        collapsed:
+          typeof showOpts.collapsed === "boolean" ? showOpts.collapsed : true,
       };
 
-      this.root = ReactDOMClient.createRoot(this.container);
+      this.options = options;
+
+      console.log(options);
+
+      if (!this.root) {
+        this.root = ReactDOMClient.createRoot(this.container);
+      }
       this.root.render(
         <React.StrictMode>
           <Rigobot chatAgentHash={this.token!} options={options} />
         </React.StrictMode>
       );
+      logger.info("Rigobot is active!");
+      return "Now Rigobot is active!";
+    } else {
+      logger.error(
+        "You must call the rigo.init method before attempting to show the chat."
+      );
     }
   },
   hide: function () {
+    logger.debug("Hiding Rigobot");
     if (this.root) {
       this.root.unmount();
+      logger.info("React DOM removed!");
+    } else {
+      logger.debug("Impossible to hide, a React root was not found!");
     }
   },
   updateContext: function ({ override = true, payload }) {
+    logger.debug("Updating context for Rigobot");
     if (this.root) {
       const newContext = override
         ? payload
@@ -132,6 +131,10 @@ window.rigo = {
             options={{ ...this.options!, context: newContext }}
           />
         </React.StrictMode>
+      );
+    } else {
+      logger.error(
+        "A React root was not found! Impossible to update context, first init Rigobot"
       );
     }
   },

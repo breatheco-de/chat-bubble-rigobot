@@ -4,119 +4,15 @@ import React, { useState, useEffect, useRef } from "react";
 
 import { svgs } from "../../assets/svgs";
 import { io, Socket } from "socket.io-client";
-import { ChatBubbleProps, ChatMessagesProps } from "../../types";
-
-function extractMovetoContent(text: string): {
-  contentInside: string | null;
-  textWithoutTags: string;
-} {
-  const movetoRegex = /<moveto>(.*?)<\/moveto>/;
-  const match = text.match(movetoRegex);
-
-  let contentInside = null;
-  let textWithoutTags = text;
-
-  if (match && match[1]) {
-    contentInside = match[1];
-    textWithoutTags = text.replace(movetoRegex, "");
-  }
-
-  return { contentInside, textWithoutTags };
-}
-
-const rootVariables = {
-  activeColor: "#0084FF",
-  successColor: "#25BF6C",
-  softBlue: "#EEF9FE",
-  lightGrey: "#DADADA",
-  backgroundGreyLight: "#F9F9F9",
-  backdropBG: "#00000060",
-};
-
-const chatStyles = {
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "10px",
-    background: rootVariables.activeColor,
-    borderTopLeftRadius: "10px",
-    borderTopRightRadius: "10px",
-    boxSizing: "border-box",
-  },
-  chatContainer: {
-    width: "400px",
-    borderRadius: "10px",
-    boxShadow: "0 1px 5px rgba(0, 0, 0, 0.5)",
-    maxHeight: "80vh",
-    boxSizing: "border-box",
-    fontFamily: "'Lato', sans-serif",
-  },
-  bubble: {
-    position: "fixed",
-    bottom: "20px",
-    right: "20px",
-    width: "50px",
-    height: "50px",
-    background: rootVariables.activeColor,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-  },
-  onlineCircle: {
-    width: "10px",
-    height: "10px",
-    background: rootVariables.successColor,
-    position: "absolute",
-    border: "1px solid white",
-    top: "70%",
-    borderRadius: "50vh",
-    left: "70%",
-  },
-  thumbnail: {
-    position: "relative",
-    border: "2px solid white",
-    borderRadius: "50vh",
-    padding: "4px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: rootVariables.activeColor,
-  },
-  messagesContainer: {
-    padding: "16px",
-    paddingBottom: "100px",
-    overflowY: "scroll",
-    height: "100%",
-    boxSizing: "border-box",
-    fontFamily: "'Lato', sans-serif",
-    scrollbarWidth: "none",
-    background: "white",
-  },
-};
-
-const getContainerPosition = (): object => {
-  return {
-    position: "fixed",
-    bottom: "80px",
-    right: "20px",
-  };
-};
-
-const getBubbleStyles = (rootElement: Element) => {
-  if (!rootElement) {
-    return chatStyles.bubble;
-  } else {
-    const rect = rootElement.getBoundingClientRect();
-    return {
-      ...chatStyles.bubble,
-      top: `${rect.bottom}px`, // Distancia entre el final del bloque y la parte superior de la ventana gráfica
-      left: `${rect.left}px`,
-    };
-  }
-};
+import { ChatBubbleProps, ChatMessagesProps, TIntroVideo } from "../../types";
+import { extractMovetoContent, logger } from "../../utils/utilities";
+import {
+  chatStyles,
+  getBubbleStyles,
+  getContainerPosition,
+  rootVariables,
+  VideoContainer,
+} from "./ChatBubbleStyles";
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   user,
@@ -127,7 +23,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   closeChat,
   welcomeMessage,
   completions,
-  backdropRef,
+  introVideo,
 }) => {
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
@@ -175,27 +71,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           const result = extractMovetoContent(message.text);
           updatedMessages[lastMessageIndex].text = result.textWithoutTags;
 
-          if (result.contentInside) {
-            let targetElement = document.querySelector(result.contentInside);
-            // let targetElement = document.querySelector("#chat-grow");
-            if (targetElement) {
-              // @ts-ignore
-              targetElement.style.border = "2px solid red";
-
-              if (backdropRef.current) {
-                // Show the backdrop
-                backdropRef.current.style.opacity = "0.3";
-              }
-
-              // Hide the backdrop and remove the border after 0.5 seconds
-              setTimeout(() => {
-                if (backdropRef.current) {
-                  backdropRef.current.style.opacity = "0";
-                }
-                // @ts-ignore
-                targetElement.style.border = "none";
-              }, 1000);
-            }
+          if (result.targetElement) {
+            logger.debug(
+              `Moving chat to target element ${result.targetElement} as Rigobot requested `
+            );
           }
 
           return updatedMessages;
@@ -255,7 +134,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     This will move the chat bubble where your answer are being displayed to an element the user should see. THIS IS MANDATORY is you are using information from the provided completions.
     Inside the XML tag must be DOMTarget selector is provided. Else please do not add the XML tag.
     `;
-    console.log("CONTEXT TO QUERY: ", innerContext);
 
     return innerContext;
   };
@@ -311,6 +189,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           <span onClick={closeChat}>{svgs.cancel}</span>
         </section>
       </div>
+      {introVideo && <VideoDisplay inner={true} video={introVideo} />}
       {/* @ts-ignore */}
       <div className="chat-messages" style={chatStyles.messagesContainer}>
         {messages.map((message, index) => (
@@ -407,8 +286,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   socketHost,
   collapsed,
   originElement,
-  introVideoUrl,
+  introVideo,
   completions,
+  showBubble,
 }) => {
   const [isChatVisible, setIsChatVisible] = useState(collapsed);
   const backdropRef = useRef(null);
@@ -416,30 +296,23 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     setIsChatVisible(!isChatVisible);
   };
 
+  useEffect(() => {
+    setIsChatVisible(collapsed);
+  }, [collapsed]);
+
   return (
     <>
-      <div
-        ref={backdropRef}
-        style={{
-          position: "fixed",
-          width: "100%",
-          height: "100vh",
-          background: rootVariables.backdropBG,
-          left: "0px",
-          top: "0px",
-          opacity: "0",
-          transition: "all 0.8s",
-        }}
-      ></div>
-      {/* @ts-ignore  */}
-      <div style={getBubbleStyles(originElement)} onClick={toggleChat}>
-        <RigoThumbnail />
-      </div>
+      {showBubble && (
+        // @ts-ignore
+        <div style={getBubbleStyles(originElement)} onClick={toggleChat}>
+          <RigoThumbnail />
+        </div>
+      )}
 
-      {isChatVisible && introVideoUrl && (
+      {isChatVisible && (
         <div
           style={{
-            ...getContainerPosition(),
+            ...getContainerPosition(originElement, showBubble, 400, 600),
             display: "flex",
             background: rootVariables.backgroundGreyLight,
             padding: "8px",
@@ -447,7 +320,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
             borderRadius: "10px",
           }}
         >
-          <VideoDisplay videoSrc={introVideoUrl} />
+          {introVideo && <VideoDisplay inner={false} video={introVideo} />}
+
           {/* @ts-ignore */}
           <div style={chatStyles.chatContainer}>
             <ChatMessages
@@ -460,24 +334,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               welcomeMessage={welcomeMessage}
               completions={completions}
               backdropRef={backdropRef}
+              introVideo={introVideo}
             />
           </div>
-        </div>
-      )}
-      {isChatVisible && !introVideoUrl && (
-        // @ts-ignore
-        <div style={{ ...chatStyles.chatContainer, ...getContainerPosition() }}>
-          <ChatMessages
-            user={user}
-            host={host}
-            purposeId={purposeId}
-            chatAgentHash={chatAgentHash}
-            socketHost={socketHost}
-            closeChat={toggleChat}
-            welcomeMessage={welcomeMessage}
-            completions={completions}
-            backdropRef={backdropRef}
-          />
         </div>
       )}
     </>
@@ -499,7 +358,13 @@ const RigoThumbnail = ({ withOnline = false }) => {
   );
 };
 
-const VideoDisplay = ({ videoSrc }: { videoSrc: string }) => {
+const VideoDisplay = ({
+  video,
+  inner,
+}: {
+  video: TIntroVideo;
+  inner: boolean;
+}) => {
   const isYouTubeUrl = (url: string) => {
     const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
     return youtubeRegex.test(url);
@@ -512,25 +377,28 @@ const VideoDisplay = ({ videoSrc }: { videoSrc: string }) => {
     return match && match[2].length === 11 ? match[2] : null;
   };
 
-  if (isYouTubeUrl(videoSrc)) {
-    const videoId = getYouTubeId(videoSrc);
+  if (isYouTubeUrl(video.url)) {
+    const videoId = getYouTubeId(video.url);
     return (
-      <div style={{ flexGrow: 1 }}>
+      <VideoContainer inner={inner ? "true" : "false"}>
         <iframe
           width="100%"
           height="100%"
           src={`https://www.youtube.com/embed/${videoId}`}
-          frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         ></iframe>
-      </div>
+      </VideoContainer>
     );
   }
 
   return (
-    <div>
-      <video src={videoSrc} controls></video>
-    </div>
+    <VideoContainer inner={inner ? "true" : "false"}>
+      <video
+        style={{ border: 0, borderRadius: "10px" }}
+        src={video.url}
+        controls
+      ></video>
+    </VideoContainer>
   );
 };
