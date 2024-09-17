@@ -1,18 +1,31 @@
 import "@fontsource/lato";
+import "highlight.js/styles/github.css";
 
 import React, { useState, useEffect, useRef } from "react";
 
 import { svgs } from "../../assets/svgs";
 import { io, Socket } from "socket.io-client";
 import { ChatBubbleProps, ChatMessagesProps, TIntroVideo } from "../../types";
-import { extractMovetoContent, logger } from "../../utils/utilities";
+import {
+  convertMarkdownToHTML,
+  extractMovetoContent,
+  logger,
+} from "../../utils/utilities";
 import {
   chatStyles,
   getBubbleStyles,
   getContainerPosition,
   rootVariables,
+  StyledMessage,
   VideoContainer,
 } from "./ChatBubbleStyles";
+import MarkdownRenderer from "../MarkdownRenderer/MarkdownRenderer";
+
+const exampleCodeBlock = `
+\`\`\`python
+print("hello world")
+\`\`\`
+`;
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   user,
@@ -24,6 +37,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   welcomeMessage,
   completions,
   introVideo,
+  purposeSlug,
 }) => {
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
@@ -42,7 +56,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     const onStartData = {
       token: user.token || chatAgentHash,
-      purpose: purposeId,
+      purpose: purposeId || purposeSlug,
       conversationId: conversationId,
     };
 
@@ -52,8 +66,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     });
 
     newSocket.on("response", (message) => {
-      // console.log("received a response ", message);
-
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
         const lastMessageIndex = updatedMessages.length - 1;
@@ -99,17 +111,25 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     };
 
     try {
-      const res = await fetch(`${host}/v1/conversation/?purpose=${purposeId}`, {
-        method: "POST",
-        headers,
-        body: null,
-      });
+      const res = await fetch(
+        `${host}/v1/conversation/?purpose=${purposeId || purposeSlug}`,
+        {
+          method: "POST",
+          headers,
+          body: null,
+        }
+      );
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
       const json = await res.json();
+      setMessages([
+        { sender: "ai", text: json.salute },
+        { sender: "ai", text: exampleCodeBlock },
+      ]);
+
       setConversationId(json.conversation_id);
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
@@ -131,7 +151,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     In the cases where you use one of the (always one at a time) please return inside an xml <moveto> like the follwing at the end of your response: 
     <moveto>DOMTarget</moveto>
 
-    This will move the chat bubble where your answer are being displayed to an element the user should see. THIS IS MANDATORY is you are using information from the provided completions.
+    This will move the chat bubble where your answer are being displayed to an element the user should see. THIS IS MANDATORY is you are using information from the provided completions and the completion have a 'DOMTarget' property.
     Inside the XML tag must be DOMTarget selector is provided. Else please do not add the XML tag.
     `;
 
@@ -193,51 +213,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       {/* @ts-ignore */}
       <div className="chat-messages" style={chatStyles.messagesContainer}>
         {messages.map((message, index) => (
-          <div
-            key={index}
-            style={{
-              background: "",
-              color: "black",
-              display: "flex",
-              gap: "6px",
-              marginBottom: "10px",
-              alignItems: "center",
-
-              flexDirection: `${
-                message.sender === "ai" ? "row" : "row-reverse"
-              }`,
-            }}
-          >
-            {message.sender === "ai" ? (
-              <>
-                <RigoThumbnail />
-                <div
-                  style={{
-                    color: rootVariables.activeColor,
-                    background: rootVariables.softBlue,
-                    padding: "10px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {message.text}
-                </div>
-              </>
-            ) : (
-              <>
-                <div>{svgs.person}</div>
-                <div
-                  style={{
-                    color: "black",
-                    background: `#F5F5F5`,
-                    padding: "10px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {message.text}
-                </div>
-              </>
-            )}
-          </div>
+          <Message message={message} key={index} />
         ))}
       </div>
       <div
@@ -289,6 +265,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   introVideo,
   completions,
   showBubble,
+  purposeSlug,
 }) => {
   const [isChatVisible, setIsChatVisible] = useState(collapsed);
   const backdropRef = useRef(null);
@@ -328,6 +305,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               user={user}
               host={host}
               purposeId={purposeId}
+              purposeSlug={purposeSlug}
               chatAgentHash={chatAgentHash}
               socketHost={socketHost}
               closeChat={toggleChat}
@@ -355,6 +333,15 @@ const RigoThumbnail = ({ withOnline = false }) => {
         ></div>
       )}
     </div>
+  );
+};
+
+const Message = ({ message }: { message: any }) => {
+  return (
+    <StyledMessage sender={message.sender}>
+      {message.sender === "ai" ? <RigoThumbnail /> : <span>{svgs.person}</span>}
+      <MarkdownRenderer markdown={message.text} />
+    </StyledMessage>
   );
 };
 

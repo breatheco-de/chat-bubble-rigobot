@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOMClient from "react-dom/client";
-import "./index.css";
 import { ChatBubble } from "./components/ChatBubble/ChatBubble.tsx";
 import { Options, RigobotProps } from "./types.ts";
 import { logger } from "./utils/utilities.ts";
@@ -25,10 +24,15 @@ const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
         avatar: "",
         nickname: "User",
       }}
+      // socketHost="http://127.0.0.1:8000"
       socketHost="https://ai.4geeks.com"
       welcomeMessage={options.welcomeMessage || "Hi! How can I help you! 👋"}
+      // host="https://8000-charlytoc-rigobot-bmwdeam7cev.ws-us116.gitpod.io"
       host="https://rigobot.herokuapp.com"
-      purposeId={options.purposeId ? options.purposeId : 1}
+      purposeId={options.purposeId ? options.purposeId : undefined}
+      purposeSlug={
+        options.purposeSlug ? options.purposeSlug : "4geeks-academy-salesman"
+      }
       chatAgentHash={chatAgentHash}
       collapsed={isCollapsed}
       originElement={originElement}

@@ -173,3 +173,41 @@ export const VideoContainer = styled.div<VideoContainerProps>`
     }
   }
 `;
+
+interface StyledMessageProps {
+  sender: "ai" | "person";
+}
+
+export const StyledMessage = styled.div<StyledMessageProps>`
+  background: transparent;
+  color: black;
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  align-items: center;
+
+  flex-direction: ${(props) => (props.sender === "ai" ? "row" : "row-reverse")};
+
+  & p {
+    margin: 0 0 15px 0;
+  }
+
+
+  > div {
+    padding: 10px;
+    border-radius: 5px;
+    ${(props) =>
+      props.sender === "ai"
+        ? `
+           color: ${rootVariables.activeColor};
+           background: ${rootVariables.softBlue}
+           
+           `
+        : `
+           
+            color: black;
+            background:#F5F5F5
+           
+            `}
+  }
+`;

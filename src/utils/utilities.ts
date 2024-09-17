@@ -1,3 +1,5 @@
+import MarkdownIt from "markdown-it";
+
 export function extractMovetoContent(text: string): {
   targetElement: string | null;
   textWithoutTags: string;
@@ -42,3 +44,8 @@ export const logger = {
     console.error(`ERROR: ${msg}`);
   },
 };
+
+export function convertMarkdownToHTML(markdownText: string) {
+  const md = new MarkdownIt();
+  return md.render(markdownText);
+}

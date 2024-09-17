@@ -12,7 +12,7 @@ export interface ChatMessagesProps {
     nickname: string;
   };
   host: string;
-  purposeId: number;
+  purposeId?: number;
   chatAgentHash: string;
   socketHost: string;
   closeChat: () => void;
@@ -20,7 +20,7 @@ export interface ChatMessagesProps {
   completions?: TCompletion[];
   backdropRef: any;
   introVideo?: TIntroVideo;
-  
+  purposeSlug?: string
 }
 
 export interface ChatBubbleProps {
@@ -32,14 +32,15 @@ export interface ChatBubbleProps {
   };
   welcomeMessage: string;
   host: string;
-  purposeId: number;
+  purposeId?: number;
   chatAgentHash: string;
   socketHost: string;
   collapsed: boolean;
   originElement: Element | null;
   introVideo?: TIntroVideo;
   completions?: TCompletion[];
-  showBubble?: boolean
+  showBubble?: boolean;
+  purposeSlug?: string;
 }
 
 export type TIntroVideo = {
@@ -57,6 +58,7 @@ export interface Options {
   completions?: TCompletion[];
   collapsed?: boolean;
   purposeId?: number;
+  purposeSlug?: string;
   bubblePosition?: {
     top?: string;
     left?: string;
