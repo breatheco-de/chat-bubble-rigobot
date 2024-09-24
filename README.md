@@ -86,14 +86,17 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
     <title>Rigobot Bubble</title>
   </head>
   <body>
-    <h3 id="chat-grow">hello</h3>
-    <script src="https://unpkg.com/rigobot-chat-bubble@0.0.13/dist/main.js"></script>
+    <h1 id="chat-grow">s</h1>
+    <div style="position: fixed; top: 50%; right: 0" id="bottom-element">
+      asdasd
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        console.log("Initializing Rigobot bubble");
         if (window.rigo) {
-          console.log("The Window object has a Rigo instance in window.rigo");
-          window.rigo.init("5ec6dfc30db24638a6f515f7e78c8513", {
+          window.rigo.init("5ec6dfc30dasdasdasd5f7e78c851asda", {
+            loglevel: "debug",
+            purposeSlug: "chayito",
             completions: [
               {
                 prompt: "What is the name of the Data Science main director?",
@@ -101,15 +104,17 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
                 DOMTarget: "#chat-grow",
               },
             ],
+
+            // introVideo: {
+            //   url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
+            // },
             context: "The user is called: Lulú",
-            introVideoUrl: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
           });
 
           window.rigo.show({
             target: "#chat-grow",
             showBubble: true,
-            collapsed: false,
-            welcomeMessage: "I love punk",
+            collapsed: true,
           });
 
           // window.rigo.hide();
@@ -126,26 +131,24 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
 
 ```json
 {
-     showBubble: true, // optional, it can be combined with "collapsed" to cofigure how rigobot displays on the website
-     target: "", // optional, the bubble or the conversation window (if showBubble=false) will tooltip from here.
-     collapsed: false, // optional, whether the chat bubble should be collapsed (closed) initially. It must be set with showBubble=true.
-
-     bubblePosition: { // optional
-       top: "10px",
-       left: "10px",
-     },
-     introVideoUrl: "", // optional, The URL of the introductory video.
-     welcomeMessage: "I love punk", // optional, if null it will get the salutation message from the purpose
-     purposeSlug: "", // optional string, defaults to the first purpose in the organization,
-     completions: [], // optional array, additional context for the chat, completion object must have properties `prompt`, `answer`, and `DOMTarget`.
-     context: "", // optional string, additional context for the chat
+  "loglevel": "info", // "info" or "debug" in lowercase, specifies the logging level (just available in the `init` method)
+  "showBubble": true, // optional, it can be combined with "collapsed" to cofigure how rigobot displays on the website
+  "target": "", // optional, the bubble or the conversation window (if showBubble=false) will tooltip from here.
+  "collapsed": false, // optional, whether the chat bubble should be collapsed (closed) initially.
+  "introVideo": {
+    "url": "url of the video" // Video to show in the chat bubble
+  }, // optional, The URL of the introductory video.
+  "welcomeMessage": "I love punk", // optional, if null it will get the salutation message from the purpose
+  "purposeSlug": "", // optional string, defaults to the first purpose in the organization,
+  "completions": [], // optional array, additional context for the chat, completion object must have properties `prompt`, `answer`, and `DOMTarget`.
+  "context": "" // optional string, additional context for the chat
 }
 ```
 
 ### Methods
 
-- `init(token: string, options?: TInitOpts)`: Initializes the chat bubble with the given token and options.
-- `show(params: { showBubble: boolean; target?: string; bubblePosition: { top?: string; left?: string; right?: string; bottom?: string; }; collapsed?: boolean; welcomeMessage?: string; })`: Displays the chat bubble with the specified options.
+- `init(token: string, options?: Options)`: Initializes the chat bubble with the given token and options.
+- `show(Options)`: Displays the chat bubble with the specified options.
 - `hide()`: Hides the chat bubble.
 - `updateContext({ override: boolean, payload: string })`: Updates the context of the chat bubble.
 

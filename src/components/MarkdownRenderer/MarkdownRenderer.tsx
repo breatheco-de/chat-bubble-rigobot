@@ -2,22 +2,12 @@ import React, { useEffect } from "react";
 import MarkdownIt from "markdown-it";
 import hljs from "highlight.js";
 
-const md = new MarkdownIt({
-  highlight: function (str, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(lang, str).value;
-      } catch (__) {}
-    }
-    return "";
-  },
-});
+const md = new MarkdownIt();
 
 const MarkdownRenderer = ({ markdown }: { markdown: string }) => {
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((block) => {
-        // @ts-ignore
-      hljs.highlightBlock(block);
+      hljs.highlightElement(block as HTMLElement);
     });
   }, [markdown]);
 

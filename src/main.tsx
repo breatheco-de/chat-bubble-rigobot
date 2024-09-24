@@ -5,7 +5,7 @@ import { Options, RigobotProps } from "./types.ts";
 import { logger } from "./utils/utilities.ts";
 
 const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
-  const isCollapsed = !Boolean(options.collapsed);
+  const isCollapsed = !options.collapsed;
   const userContext = options.context || "";
   let originElement = null;
 
@@ -94,7 +94,7 @@ window.rigo = {
 
       this.options = options;
 
-      console.log(options);
+      logger.debug(`Options to init Rigo: ${options}`);
 
       if (!this.root) {
         this.root = ReactDOMClient.createRoot(this.container);

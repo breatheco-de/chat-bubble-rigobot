@@ -1,3 +1,6 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import "@fontsource/lato";
 import "highlight.js/styles/github.css";
 
@@ -6,11 +9,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { svgs } from "../../assets/svgs";
 import { io, Socket } from "socket.io-client";
 import { ChatBubbleProps, ChatMessagesProps, TIntroVideo } from "../../types";
-import {
-  convertMarkdownToHTML,
-  extractMovetoContent,
-  logger,
-} from "../../utils/utilities";
+import { extractMovetoContent, logger } from "../../utils/utilities";
 import {
   chatStyles,
   getBubbleStyles,
@@ -121,6 +120,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       );
 
       if (!res.ok) {
+        console.log(res);
+        res;
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
@@ -137,7 +138,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   };
 
   const createContext = () => {
-    let innerContext = `
+    const innerContext = `
     This context is related to the user or the environment:
     """
     ${user.context}
@@ -202,8 +203,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     >
       {/* @ts-ignore */}
       <div style={chatStyles.header}>
-        <section>
+        <section style={{display: "flex", alignItems: "center", gap: "10px", color: "white", fontWeight: 500}}>
           <RigoThumbnail withOnline={true} />
+          <p>Rigobot AI </p>
         </section>
         <section>
           <span onClick={closeChat}>{svgs.cancel}</span>
