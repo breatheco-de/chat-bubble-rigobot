@@ -49,3 +49,69 @@ export function convertMarkdownToHTML(markdownText: string) {
   const md = new MarkdownIt();
   return md.render(markdownText);
 }
+
+export const createContext = (userContext: string, completions: string) => {
+  const innerContext = `
+  This context is related to the user or the environment:
+  """
+  ${userContext}
+  """
+
+  Think about the following completions (if available) as a source of proven information about the website in general. If the user message can be answered using one of the following completions, return its answer.
+  """
+  ${completions}
+  """
+
+  In the cases where you use one of the (always one at a time) please return inside an xml <moveto> like the follwing at the end of your response: 
+  <moveto>DOMTarget</moveto>
+
+  This will move the chat bubble where your answer are being displayed to an element the user should see. THIS IS MANDATORY is you are using information from the provided completions and the completion have a 'DOMTarget' property.
+  Inside the XML tag must be DOMTarget selector is provided. Else please do not add the XML tag.
+  `;
+
+  return innerContext;
+};
+
+type initConversationOptions = {
+  chatAgentHash: string;
+  userToken: string;
+  host: string;
+  purposeId?: number;
+  purposeSlug?: string;
+};
+
+export const initConversation = async ({
+  chatAgentHash,
+  userToken,
+  host,
+  purposeId,
+  purposeSlug,
+}: initConversationOptions) => {
+  const headers = {
+    "Content-Type": "application/json",
+    "Chat-Agent-Hash": chatAgentHash,
+    Authorization: `Token ${userToken || chatAgentHash}`,
+  };
+
+  try {
+    const res = await fetch(
+      `${host}/v1/conversation/?purpose=${purposeId || purposeSlug}`,
+      {
+        method: "POST",
+        headers,
+        body: null,
+      }
+    );
+
+    if (!res.ok) {
+      console.log(res);
+      res;
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+  }
+};

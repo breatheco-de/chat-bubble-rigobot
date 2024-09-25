@@ -1,6 +1,6 @@
-Sure, Charly! Here's a `README.md` file for your project:
-
 # Rigobot Chat Bubble
+
+> Note: To use this library you must have a [Rigobot acoount](https://ai.4geeks.com/)
 
 Rigobot Chat Bubble is a customizable chat interface that can be easily integrated into any website. It allows users to interact with a chat agent and receive responses in real-time.
 

@@ -8,23 +8,74 @@ import React, { useState, useEffect, useRef } from "react";
 
 import { svgs } from "../../assets/svgs";
 import { io, Socket } from "socket.io-client";
-import { ChatBubbleProps, ChatMessagesProps, TIntroVideo } from "../../types";
-import { extractMovetoContent, logger } from "../../utils/utilities";
+import { ChatBubbleProps, ChatMessagesProps } from "../../types";
+import {
+  createContext,
+  extractMovetoContent,
+  initConversation,
+  logger,
+} from "../../utils/utilities";
 import {
   chatStyles,
   getBubbleStyles,
   getContainerPosition,
+  RadarElement,
   rootVariables,
-  StyledMessage,
-  VideoContainer,
 } from "./ChatBubbleStyles";
-import MarkdownRenderer from "../MarkdownRenderer/MarkdownRenderer";
 
-const exampleCodeBlock = `
-\`\`\`python
-print("hello world")
-\`\`\`
-`;
+import { VideoDisplay } from "../VideoContainer/VideoContainer";
+import { Message, RigoThumbnail } from "../Smalls/Smalls";
+
+type TChatInputProps = {
+  inputValue: string;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyUp: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onSubmit: () => void;
+};
+
+const ChatInput = ({
+  inputValue,
+  onInputChange,
+  onKeyUp,
+  onSubmit,
+}: TChatInputProps) => {
+  return (
+    <div
+      style={{
+        background: rootVariables.softBlue,
+        padding: "16px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "10px",
+        position: "absolute",
+        bottom: "0",
+        width: "100%",
+        borderBottomLeftRadius: "10px",
+        borderBottomRightRadius: "10px",
+        boxSizing: "border-box",
+      }}
+    >
+      <input
+        type="text"
+        placeholder="Ask Rigobot..."
+        value={inputValue}
+        // onChange={(e) => setInputValue(e.target.value)}
+        onChange={onInputChange}
+        onKeyUp={onKeyUp}
+        style={{
+          padding: "10px",
+          width: "100%",
+          borderRadius: "11px",
+          border: `1px solid ${rootVariables.lightGrey}`,
+          color: "black",
+          outline: `1px solid ${rootVariables.lightGrey}`,
+        }}
+      />
+      <span onClick={onSubmit}>{svgs.send}</span>
+    </div>
+  );
+};
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   user,
@@ -37,6 +88,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   completions,
   introVideo,
   purposeSlug,
+  setOriginElementBySelector,
 }) => {
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
@@ -86,6 +138,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
             logger.debug(
               `Moving chat to target element ${result.targetElement} as Rigobot requested `
             );
+            setOriginElementBySelector(result.targetElement);
           }
 
           return updatedMessages;
@@ -99,64 +152,31 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   }, [conversationId]);
 
   useEffect(() => {
-    initConversation();
+    initialize();
   }, [host, purposeId, chatAgentHash, user.token]);
 
-  const initConversation = async () => {
-    const headers = {
-      "Content-Type": "application/json",
-      "Chat-Agent-Hash": chatAgentHash,
-      Authorization: `Token ${user.token || chatAgentHash}`,
-    };
+  const initialize = async () => {
+    const json = await initConversation({
+      chatAgentHash: chatAgentHash,
+      purposeId: purposeId,
+      purposeSlug: purposeSlug,
+      userToken: user.token || "",
+      host: host,
+    });
+    setMessages([{ sender: "ai", text: json.salute }]);
 
-    try {
-      const res = await fetch(
-        `${host}/v1/conversation/?purpose=${purposeId || purposeSlug}`,
-        {
-          method: "POST",
-          headers,
-          body: null,
-        }
-      );
-
-      if (!res.ok) {
-        console.log(res);
-        res;
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      const json = await res.json();
-      setMessages([
-        { sender: "ai", text: json.salute },
-        { sender: "ai", text: exampleCodeBlock },
-      ]);
-
-      setConversationId(json.conversation_id);
-    } catch (error) {
-      console.error("There was a problem with the fetch operation:", error);
-    }
+    setConversationId(json.conversation_id);
   };
 
-  const createContext = () => {
-    const innerContext = `
-    This context is related to the user or the environment:
-    """
-    ${user.context}
-    """
-
-    Think about the following completions (if available) as a source of proven information about the website in general. If the user message can be answered using one of the following completions, return its answer.
-    """
-    ${JSON.stringify(completions)}
-    """
-
-    In the cases where you use one of the (always one at a time) please return inside an xml <moveto> like the follwing at the end of your response: 
-    <moveto>DOMTarget</moveto>
-
-    This will move the chat bubble where your answer are being displayed to an element the user should see. THIS IS MANDATORY is you are using information from the provided completions and the completion have a 'DOMTarget' property.
-    Inside the XML tag must be DOMTarget selector is provided. Else please do not add the XML tag.
-    `;
-
-    return innerContext;
+  const setRandomPosition = () => {
+    const options = [
+      "#chat-grow",
+      ".centered-element",
+      ".bottom-left-element",
+      "#bottom-element",
+    ];
+    const randomSelector = options[Math.floor(Math.random() * options.length)];
+    setOriginElementBySelector(randomSelector);
   };
 
   const handleSendMessage = () => {
@@ -165,7 +185,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         message: {
           type: "user",
           text: inputValue,
-          context: createContext(),
+          context: createContext(user.context, JSON.stringify(completions)),
         },
         conversation: {
           id: conversationId,
@@ -192,6 +212,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   };
 
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
   return (
     <div
       style={{
@@ -203,12 +227,25 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     >
       {/* @ts-ignore */}
       <div style={chatStyles.header}>
-        <section style={{display: "flex", alignItems: "center", gap: "10px", color: "white", fontWeight: 500}}>
+        <section
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            color: "white",
+            fontWeight: 500,
+          }}
+        >
           <RigoThumbnail withOnline={true} />
           <p>Rigobot AI </p>
         </section>
         <section>
-          <span onClick={closeChat}>{svgs.cancel}</span>
+          <span style={{ cursor: "pointer" }} onClick={closeChat}>
+            {svgs.cancel}
+          </span>
+          <span style={{ cursor: "pointer" }} onClick={setRandomPosition}>
+            {svgs.rigoSvg}
+          </span>
         </section>
       </div>
       {introVideo && <VideoDisplay inner={true} video={introVideo} />}
@@ -218,39 +255,12 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           <Message message={message} key={index} />
         ))}
       </div>
-      <div
-        style={{
-          background: rootVariables.softBlue,
-          padding: "16px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "10px",
-          position: "absolute",
-          bottom: "0",
-          width: "100%",
-          borderBottomLeftRadius: "10px",
-          borderBottomRightRadius: "10px",
-          boxSizing: "border-box",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Ask Rigobot..."
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyUp={handleKeyUp}
-          style={{
-            padding: "10px",
-            width: "100%",
-            borderRadius: "11px",
-            border: `1px solid ${rootVariables.lightGrey}`,
-            color: "black",
-            outline: `1px solid ${rootVariables.lightGrey}`,
-          }}
-        />
-        <span onClick={handleSendMessage}>{svgs.send}</span>
-      </div>
+      <ChatInput
+        inputValue={inputValue}
+        onKeyUp={handleKeyUp}
+        onSubmit={handleSendMessage}
+        onInputChange={onInputChange}
+      />
     </div>
   );
 };
@@ -269,8 +279,12 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   showBubble,
   purposeSlug,
 }) => {
-  const [isChatVisible, setIsChatVisible] = useState(collapsed);
-  const backdropRef = useRef(null);
+  const [isChatVisible, setIsChatVisible] = useState<boolean>(collapsed);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [originElementState, setOriginElementState] =
+    useState<HTMLElement | null>(originElement as HTMLElement);
+
   const toggleChat = () => {
     setIsChatVisible(!isChatVisible);
   };
@@ -279,19 +293,81 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     setIsChatVisible(collapsed);
   }, [collapsed]);
 
+  useEffect(() => {
+    if (isChatVisible && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Adjust horizontal position
+      if (rect.right > viewportWidth) {
+        containerRef.current.style.left = `${viewportWidth - rect.width}px`;
+      } else if (rect.left < 0) {
+        containerRef.current.style.left = "0px";
+      }
+
+      // Adjust vertical position
+      if (rect.bottom > viewportHeight) {
+        containerRef.current.style.top = `${viewportHeight - rect.height}px`;
+      } else if (rect.top < 0) {
+        containerRef.current.style.top = "0px";
+      }
+    }
+  }, [isChatVisible]);
+
+  useEffect(() => {
+    console.log(
+      "The origin element has changed! Trying to move chat bubble and activating pulsar"
+    );
+    setIsChatVisible(false);
+  }, [originElementState]);
+
+  const setOriginElementBySelector = (selector: string) => {
+    const element = document.querySelector<HTMLElement>(selector);
+    if (element) {
+      setOriginElementState(element);
+    } else {
+      console.warn(`Element with selector "${selector}" not found.`);
+    }
+  };
+
+  const getRadarElementProps = () => {
+    logger.debug("Changing props for Radar");
+
+    if (originElementState) {
+      logger.debug("Target element found! Calculating radar dimensions");
+      const rect = originElementState.getBoundingClientRect();
+      return {
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+        top: `${rect.top}px`,
+        left: `${rect.left}px`,
+      };
+    }
+    return {
+      width: "0px",
+      height: "0px",
+      top: "0px",
+      left: "0px",
+    };
+  };
+
   return (
     <>
       {showBubble && (
         // @ts-ignore
-        <div style={getBubbleStyles(originElement)} onClick={toggleChat}>
+        <div style={getBubbleStyles(originElementState)} onClick={toggleChat}>
           <RigoThumbnail />
+          <RadarElement key={`${originElementState?.id}-${originElementState?.className}`} {...getRadarElementProps()} />
         </div>
       )}
 
       {isChatVisible && (
         <div
+          id="chat-video-container"
+          ref={containerRef} // Attach the reference to the container
           style={{
-            ...getContainerPosition(originElement, showBubble, 400, 600),
+            ...getContainerPosition(originElementState, showBubble, 400, 600),
             display: "flex",
             background: rootVariables.backgroundGreyLight,
             padding: "8px",
@@ -315,79 +391,11 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               completions={completions}
               backdropRef={backdropRef}
               introVideo={introVideo}
+              setOriginElementBySelector={setOriginElementBySelector}
             />
           </div>
         </div>
       )}
     </>
-  );
-};
-
-const RigoThumbnail = ({ withOnline = false }) => {
-  return (
-    // @ts-ignore
-    <div style={chatStyles.thumbnail}>
-      {svgs.rigoSvg}
-      {withOnline && (
-        <div
-          // @ts-ignore
-          style={chatStyles.onlineCircle}
-        ></div>
-      )}
-    </div>
-  );
-};
-
-const Message = ({ message }: { message: any }) => {
-  return (
-    <StyledMessage sender={message.sender}>
-      {message.sender === "ai" ? <RigoThumbnail /> : <span>{svgs.person}</span>}
-      <MarkdownRenderer markdown={message.text} />
-    </StyledMessage>
-  );
-};
-
-const VideoDisplay = ({
-  video,
-  inner,
-}: {
-  video: TIntroVideo;
-  inner: boolean;
-}) => {
-  const isYouTubeUrl = (url: string) => {
-    const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
-    return youtubeRegex.test(url);
-  };
-
-  const getYouTubeId = (url: string) => {
-    const regExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-  };
-
-  if (isYouTubeUrl(video.url)) {
-    const videoId = getYouTubeId(video.url);
-    return (
-      <VideoContainer inner={inner ? "true" : "false"}>
-        <iframe
-          width="100%"
-          height="100%"
-          src={`https://www.youtube.com/embed/${videoId}`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
-      </VideoContainer>
-    );
-  }
-
-  return (
-    <VideoContainer inner={inner ? "true" : "false"}>
-      <video
-        style={{ border: 0, borderRadius: "10px" }}
-        src={video.url}
-        controls
-      ></video>
-    </VideoContainer>
   );
 };

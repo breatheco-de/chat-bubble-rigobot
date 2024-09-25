@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from 'styled-components';
 
 export const rootVariables = {
   activeColor: "#0084FF",
@@ -93,7 +93,6 @@ export const getContainerPosition = (
     let bottom: number | "auto" = "auto";
     let right: number | "auto" = "auto";
 
-    // Adjust top and bottom if the container overflows the viewport
     if (top + containerHeight > viewportHeight) {
       top = "auto";
       bottom = viewportHeight - rect.top + (showBubble ? 70 : 0);
@@ -111,6 +110,7 @@ export const getContainerPosition = (
       left: left !== "auto" ? left : undefined,
       bottom: bottom !== "auto" ? bottom : undefined,
       right: right !== "auto" ? right : undefined,
+      // transition: 'top 1s ease, left 1s ease',
     };
   }
 };
@@ -149,6 +149,7 @@ export const getBubbleStyles = (rootElement: Element) => {
       left: left !== "auto" ? left : undefined,
       bottom: bottom !== "auto" ? bottom : undefined,
       right: right !== "auto" ? right : undefined,
+      transition: 'top 1s ease, left 1s ease',
     };
   }
 };
@@ -210,4 +211,46 @@ export const StyledMessage = styled.div<StyledMessageProps>`
            
             `}
   }
+`;
+
+
+const radarWave = keyframes`
+  0% {
+    transform: scale(0.5);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+`;
+
+const fadeOut = keyframes`
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+`;
+
+interface RadarElementProps {
+  width: string;
+  height: string;
+  top: string;
+  left: string;
+}
+
+export const RadarElement = styled.div<RadarElementProps>`
+  animation: ${radarWave} 1s infinite, ${fadeOut} 6s forwards;
+  width: ${props => props.width};
+  height: ${props => props.height};
+  background-color: red;
+  position: fixed;
+  top: ${props => `calc(${props.top})`};
+  left: ${props => `calc(${props.left})`};
 `;
