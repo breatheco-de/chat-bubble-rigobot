@@ -1,4 +1,4 @@
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes } from "styled-components";
 
 export const rootVariables = {
   activeColor: "#0084FF",
@@ -149,7 +149,7 @@ export const getBubbleStyles = (rootElement: Element) => {
       left: left !== "auto" ? left : undefined,
       bottom: bottom !== "auto" ? bottom : undefined,
       right: right !== "auto" ? right : undefined,
-      transition: 'top 1s ease, left 1s ease',
+      transition: "top 1s ease, left 1s ease",
     };
   }
 };
@@ -193,7 +193,6 @@ export const StyledMessage = styled.div<StyledMessageProps>`
     margin: 0 0 15px 0;
   }
 
-
   > div {
     padding: 10px;
     border-radius: 5px;
@@ -212,7 +211,6 @@ export const StyledMessage = styled.div<StyledMessageProps>`
             `}
   }
 `;
-
 
 const radarWave = keyframes`
   0% {
@@ -247,10 +245,42 @@ interface RadarElementProps {
 
 export const RadarElement = styled.div<RadarElementProps>`
   animation: ${radarWave} 1s infinite, ${fadeOut} 6s forwards;
-  width: ${props => props.width};
-  height: ${props => props.height};
+  width: ${(props) => props.width};
+  height: ${(props) => props.height};
   background-color: red;
   position: fixed;
-  top: ${props => `calc(${props.top})`};
-  left: ${props => `calc(${props.left})`};
+  top: ${(props) => `calc(${props.top})`};
+  left: ${(props) => `calc(${props.left})`};
+`;
+
+
+
+
+const palpitating = keyframes`
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(10);
+    opacity: 0;
+  }
+`;
+
+interface PalpitatingBubbleProps {
+  width: string;
+  height: string;
+}
+
+export const PalpitatingBubble = styled.div<PalpitatingBubbleProps>`
+  animation: ${palpitating} 1s infinite, ${fadeOut} 6s forwards;
+  width: ${(props) => props.width};
+  height: ${(props) => props.height};
+  background-color: ${rootVariables.activeColor};
+  border-radius: 50%;
+  position: absolute
 `;

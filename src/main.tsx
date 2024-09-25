@@ -39,6 +39,7 @@ const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
       introVideo={options.introVideo}
       completions={options.completions}
       showBubble={options.showBubble}
+      highlight={options.highlight}
     />
   );
 };

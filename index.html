@@ -14,7 +14,10 @@
     <div style="position: fixed; top: 50%; right: 50%" class="centered-element">
       centered element
     </div>
-    <div style="position: fixed; bottom: 0%; right: 50%" class="bottom-left-element">
+    <div
+      style="position: fixed; bottom: 0%; right: 50%"
+      class="bottom-left-element"
+    >
       bottom left element
     </div>
     <script type="module" src="/src/main.tsx"></script>
@@ -33,15 +36,17 @@
               },
             ],
 
-             introVideo: {
-               url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s"
-             },
+            introVideo: {
+              url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
+            },
             context: "The user is called: Lulú",
           });
 
           window.rigo.show({
+            target: "#bottom-element",
             showBubble: true,
             collapsed: true,
+            highlight: false,
           });
 
           // window.rigo.hide();

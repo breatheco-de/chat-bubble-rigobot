@@ -19,6 +19,7 @@ import {
   chatStyles,
   getBubbleStyles,
   getContainerPosition,
+  PalpitatingBubble,
   RadarElement,
   rootVariables,
 } from "./ChatBubbleStyles";
@@ -278,6 +279,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   completions,
   showBubble,
   purposeSlug,
+  highlight,
 }) => {
   const [isChatVisible, setIsChatVisible] = useState<boolean>(collapsed);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -358,7 +360,13 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         // @ts-ignore
         <div style={getBubbleStyles(originElementState)} onClick={toggleChat}>
           <RigoThumbnail />
-          <RadarElement key={`${originElementState?.id}-${originElementState?.className}`} {...getRadarElementProps()} />
+          <RadarElement
+            key={`${originElementState?.id}-${originElementState?.className}`}
+            {...getRadarElementProps()}
+          />
+          {Boolean(highlight) && (
+            <PalpitatingBubble width="50px" height="50px" />
+          )}
         </div>
       )}
 

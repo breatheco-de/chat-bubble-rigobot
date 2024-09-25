@@ -21,8 +21,8 @@ export interface ChatMessagesProps {
   completions?: TCompletion[];
   backdropRef: any;
   introVideo?: TIntroVideo;
-  purposeSlug?: string
-  setOriginElementBySelector: (selector:string) => void
+  purposeSlug?: string;
+  setOriginElementBySelector: (selector: string) => void;
 }
 
 export interface ChatBubbleProps {
@@ -43,6 +43,7 @@ export interface ChatBubbleProps {
   completions?: TCompletion[];
   showBubble?: boolean;
   purposeSlug?: string;
+  highlight?: boolean;
 }
 
 export type TIntroVideo = {
@@ -67,6 +68,7 @@ export interface Options {
     right?: string;
     bottom?: string;
   };
+  highlight?: boolean;
   loglevel?: "debug" | "info";
 }
 
