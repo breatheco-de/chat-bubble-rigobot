@@ -21,7 +21,7 @@
       bottom left element
     </div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- <script>
+    <script>
       document.addEventListener("DOMContentLoaded", function () {
         if (window.rigo) {
           // window.rigo.init("248b53865d6743519ef55b4ec65772a7", {
@@ -40,13 +40,16 @@
               url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
             },
             context: "The user is called: Lulú",
+            user: {
+              token: "some user token "
+            }
           });
 
           window.rigo.show({
-            target: "#bottom-element",
+            // target: "#bottom-element",
             showBubble: true,
-            collapsed: true,
-            highlight: false,
+            collapsed: false,
+            highlight: true,
           });
 
           // window.rigo.hide();
@@ -54,6 +57,6 @@
           console.error("window.rigo is not defined");
         }
       });
-    </script> -->
+    </script>
   </body>
 </html>

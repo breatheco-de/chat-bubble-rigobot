@@ -50,6 +50,10 @@ Include the following script in your HTML file:
      },
      collapsed: false,
      welcomeMessage: "I love punk",
+     (user: { // This property is optional, use it only if the user is authenticated
+         token: "some user token ",
+         nickname: "user nickname"
+       }),
    });
    ```
 
@@ -109,6 +113,10 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
             //   url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
             // },
             context: "The user is called: Lulú",
+            (user: { // This property is optional, use it only if the user is authenticated
+              token: "some user token ",
+              nickname: "user nickname"
+            }),
           });
 
           window.rigo.show({

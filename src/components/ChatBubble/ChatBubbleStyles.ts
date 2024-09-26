@@ -162,17 +162,10 @@ export const VideoContainer = styled.div<VideoContainerProps>`
   width: 100%;
   height: 200px;
   border-radius: ${(props) => (props.inner ? "0px" : "10px")};
-  display: ${(props) => (props.inner === "true" ? "block" : "none")};
+  display: block;
   overflow: hidden;
-  @media (min-width: 1050px) {
-    width: 600px;
-    height: auto;
-    flex-grow: 1;
-    display: ${(props) => (props.inner === "true" ? "none" : "block")};
-    & iframe {
-      border-radius: 10px;
-    }
-  }
+ 
+  
 `;
 
 interface StyledMessageProps {
@@ -247,7 +240,9 @@ export const RadarElement = styled.div<RadarElementProps>`
   animation: ${radarWave} 1s infinite, ${fadeOut} 6s forwards;
   width: ${(props) => props.width};
   height: ${(props) => props.height};
-  background-color: red;
+  background-color: transparent;
+  border: 4px solid red;
+  border-radius: 5px;
   position: fixed;
   top: ${(props) => `calc(${props.top})`};
   left: ${(props) => `calc(${props.left})`};
@@ -266,7 +261,7 @@ const palpitating = keyframes`
     opacity: 0.5;
   }
   100% {
-    transform: scale(10);
+    transform: scale(4);
     opacity: 0;
   }
 `;

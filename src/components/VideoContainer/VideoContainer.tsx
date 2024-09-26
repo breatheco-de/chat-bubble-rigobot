@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import React from "react";
+
 import { TIntroVideo } from "../../types"
 import { VideoContainer } from "../ChatBubble/ChatBubbleStyles"
 
