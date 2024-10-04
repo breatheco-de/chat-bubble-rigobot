@@ -26,6 +26,8 @@ import {
 
 import { VideoDisplay } from "../VideoContainer/VideoContainer";
 import { Message, RigoThumbnail } from "../Smalls/Smalls";
+import { useStore } from "../../utils/store";
+import { createPortal } from "react-dom";
 
 type TChatInputProps = {
   inputValue: string;
@@ -91,8 +93,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   purposeSlug,
   setOriginElementBySelector,
 }) => {
+  const { storedMessages, setStoredMessages } = useStore((state) => ({
+    storedMessages: state.messages,
+    setStoredMessages: state.setMessages,
+  }));
+
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
+    ...storedMessages,
   ]);
   const [inputValue, setInputValue] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -142,6 +150,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
             setOriginElementBySelector(result.targetElement);
           }
 
+          // @ts-ignore
+          setStoredMessages(updatedMessages);
           return updatedMessages;
         });
       }
@@ -164,20 +174,12 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       userToken: user.token || "",
       host: host,
     });
-    setMessages([{ sender: "ai", text: json.salute }]);
+
+    if (storedMessages.length > 0) {
+      setMessages(storedMessages);
+    }
 
     setConversationId(json.conversation_id);
-  };
-
-  const setRandomPosition = () => {
-    const options = [
-      "#chat-grow",
-      ".centered-element",
-      ".bottom-left-element",
-      "#bottom-element",
-    ];
-    const randomSelector = options[Math.floor(Math.random() * options.length)];
-    setOriginElementBySelector(randomSelector);
   };
 
   const handleSendMessage = () => {
@@ -197,11 +199,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
       socket.emit("message", messageData);
 
-      setMessages([
+      const newMessages = [
         ...messages,
         { text: inputValue, sender: "person" },
         { text: "", sender: "ai" },
-      ]);
+      ];
+      setMessages(newMessages);
+      // @ts-ignore
+      setStoredMessages(newMessages);
 
       setInputValue("");
     }
@@ -222,7 +227,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       style={{
         position: "relative",
         height: "500px",
-        paddingBottom: "100px",
+        paddingBottom: "200px",
         overflowY: "hidden",
       }}
     >
@@ -243,9 +248,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         <section>
           <span style={{ cursor: "pointer" }} onClick={closeChat}>
             {svgs.cancel}
-          </span>
-          <span style={{ cursor: "pointer" }} onClick={setRandomPosition}>
-            {svgs.rigoSvg}
           </span>
         </section>
       </div>
@@ -318,11 +320,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   }, [isChatVisible]);
 
   useEffect(() => {
-    console.log(
-      "The origin element has changed! Trying to move chat bubble and activating pulsar"
-    );
     setIsChatVisible(false);
   }, [originElementState]);
+
+  useEffect(() => {
+    if (originElement) {
+      setOriginElementState(originElement as HTMLElement);
+    }
+  }, [originElement]);
 
   const setOriginElementBySelector = (selector: string) => {
     const element = document.querySelector<HTMLElement>(selector);
@@ -356,54 +361,55 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
   return (
     <>
-      {showBubble && (
-        // @ts-ignore
-        <div style={getBubbleStyles(originElementState)} onClick={toggleChat}>
-          <RigoThumbnail />
-          <RadarElement
-            key={`${originElementState?.id}-${originElementState?.className}`}
-            {...getRadarElementProps()}
-          />
-          {Boolean(highlight) && (
-            <PalpitatingBubble width="50px" height="50px" />
-          )}
-        </div>
-      )}
-
-      {isChatVisible && (
-        <div
-          id="chat-video-container"
-          ref={containerRef} // Attach the reference to the container
-          style={{
-            ...getContainerPosition(originElementState, showBubble, 400, 600),
-            display: "flex",
-            background: rootVariables.backgroundGreyLight,
-            padding: "8px",
-            gap: "16px",
-            borderRadius: "10px",
-          }}
-        >
-          {introVideo && <VideoDisplay inner={false} video={introVideo} />}
-
-          {/* @ts-ignore */}
-          <div style={chatStyles.chatContainer}>
-            <ChatMessages
-              user={user}
-              host={host}
-              purposeId={purposeId}
-              purposeSlug={purposeSlug}
-              chatAgentHash={chatAgentHash}
-              socketHost={socketHost}
-              closeChat={toggleChat}
-              welcomeMessage={welcomeMessage}
-              completions={completions}
-              backdropRef={backdropRef}
-              introVideo={introVideo}
-              setOriginElementBySelector={setOriginElementBySelector}
+      {showBubble &&
+        createPortal(
+          // @ts-ignore
+          <div style={getBubbleStyles(originElementState)} onClick={toggleChat}>
+            <RigoThumbnail />
+            <RadarElement
+              key={`${originElementState?.id}-${originElementState?.className}`}
+              {...getRadarElementProps()}
             />
-          </div>
-        </div>
-      )}
+            {Boolean(highlight) && (
+              <PalpitatingBubble width="50px" height="50px" />
+            )}
+          </div>,
+          document.body
+        )}
+
+      {isChatVisible &&
+        createPortal(
+          <div
+            ref={containerRef}
+            style={{
+              ...getContainerPosition(originElementState, showBubble, 400, 600),
+              display: "flex",
+              background: "white",
+              padding: "8px",
+              gap: "16px",
+              borderRadius: "10px",
+            }}
+          >
+            {/* @ts-ignore */}
+            <div style={chatStyles.chatContainer}>
+              <ChatMessages
+                user={user}
+                host={host}
+                purposeId={purposeId}
+                purposeSlug={purposeSlug}
+                chatAgentHash={chatAgentHash}
+                socketHost={socketHost}
+                closeChat={toggleChat}
+                welcomeMessage={welcomeMessage}
+                completions={completions}
+                backdropRef={backdropRef}
+                introVideo={introVideo}
+                setOriginElementBySelector={setOriginElementBySelector}
+              />
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 };

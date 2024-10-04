@@ -6,26 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rigobot Bubble</title>
   </head>
-  <body>
+  <body style="height: 300vh">
     <h1 id="chat-grow">s</h1>
-    <div style="position: fixed; top: 50%; right: 0" id="bottom-element">
+    <div style="position: absolute; top: 50%; right: 0" id="bottom-element">
       asdasd
     </div>
-    <div style="position: fixed; top: 50%; right: 50%" class="centered-element">
+    <div style="position: absolute; top: 50%; right: 50%" class="centered-element">
       centered element
     </div>
     <div
-      style="position: fixed; bottom: 0%; right: 50%"
+      style="position: absolute; bottom: 0%; right: 50%"
       class="bottom-left-element"
     >
       bottom left element
     </div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
+    <!-- <script>
       document.addEventListener("DOMContentLoaded", function () {
         if (window.rigo) {
           // window.rigo.init("248b53865d6743519ef55b4ec65772a7", {
-          window.rigo.init("5ec6dfc30db24638a6f515f7e78c8513", {
+          window.rigo.init("0839749d0baa4a51ac165d40b98f95f3", {
             loglevel: "debug",
             purposeSlug: "chayito",
             completions: [
@@ -41,8 +41,8 @@
             },
             context: "The user is called: Lulú",
             user: {
-              token: "some user token "
-            }
+              token: "some user token ",
+            },
           });
 
           window.rigo.show({
@@ -57,6 +57,6 @@
           console.error("window.rigo is not defined");
         }
       });
-    </script>
+    </script> -->
   </body>
 </html>

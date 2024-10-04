@@ -1,48 +1,9 @@
 import React from "react";
 import ReactDOMClient from "react-dom/client";
-import { ChatBubble } from "./components/ChatBubble/ChatBubble.tsx";
-import { Options, RigobotProps } from "./types.ts";
+
+import { Options } from "./types.ts";
 import { logger } from "./utils/utilities.ts";
-
-const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
-  const isCollapsed = !options.collapsed;
-  const userContext = options.context || "";
-  let originElement = null;
-
-  if (options.target) {
-    originElement = document.querySelector(options.target);
-  }
-
-  logger.debug("Starting Rigobot with the following options");
-  logger.debug(`${JSON.stringify(options)}`);
-
-  return (
-    <ChatBubble
-      user={{
-        context: userContext,
-        token: chatAgentHash,
-        avatar: "",
-        nickname: "User",
-      }}
-      // socketHost="http://127.0.0.1:8000"
-      socketHost="https://ai.4geeks.com"
-      welcomeMessage={options.welcomeMessage || "Hi! How can I help you! 👋"}
-      // host="https://8000-charlytoc-rigobot-bmwdeam7cev.ws-us116.gitpod.io"
-      host="https://rigobot.herokuapp.com"
-      purposeId={options.purposeId ? options.purposeId : undefined}
-      purposeSlug={
-        options.purposeSlug ? options.purposeSlug : "4geeks-academy-salesman"
-      }
-      chatAgentHash={chatAgentHash}
-      collapsed={isCollapsed}
-      originElement={originElement}
-      introVideo={options.introVideo}
-      completions={options.completions}
-      showBubble={options.showBubble}
-      highlight={options.highlight}
-    />
-  );
-};
+import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
 
 interface Rigo {
   init: (token: string, options?: Options) => void;
@@ -102,7 +63,7 @@ window.rigo = {
       }
       this.root.render(
         <React.StrictMode>
-          <Rigobot chatAgentHash={this.token!} options={options} />
+          <Rigobot chatAgentHash={this.token!} options={this.options} />
         </React.StrictMode>
       );
       logger.info("Rigobot is active!");
@@ -121,6 +82,22 @@ window.rigo = {
     } else {
       logger.debug("Impossible to hide, a React root was not found!");
     }
+  },
+  // @ts-ignore
+  test: function () {
+    if (this.options?.target) {
+      this.options.target = ".bottom-left-element";
+    }
+    return "Ready";
+  },
+  // @ts-ignore
+  updateOptions: function (newOptions) {
+    logger.debug("Updating options for Rigobot");
+    this.options = { ...this.options, ...newOptions };
+    logger.info(`Options updated: ${JSON.stringify(this.options)}`);
+
+    const event = new CustomEvent("optionsUpdated", { detail: this.options });
+    window.dispatchEvent(event);
   },
   updateContext: function ({ override = true, payload }) {
     logger.debug("Updating context for Rigobot");

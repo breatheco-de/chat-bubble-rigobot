@@ -1,0 +1,70 @@
+import { ChatBubble } from "../ChatBubble/ChatBubble";
+
+import { RigobotProps } from "../../types";
+import React, { useEffect, useState } from "react"
+import { logger } from "../../utils/utilities"
+
+export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
+  const [currentOptions, setCurrentOptions] = useState(options);
+  const [isCollapsed, setIsCollapsed] = useState(!options.collapsed);
+  const [originElement, setOriginElement] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const handleOptionsUpdate = (event: any) => {
+      setCurrentOptions(event.detail);
+    };
+
+    window.addEventListener("optionsUpdated", handleOptionsUpdate);
+
+    return () => {
+      window.removeEventListener("optionsUpdated", handleOptionsUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Update isCollapsed and originElement whenever currentOptions change
+    setIsCollapsed(!currentOptions.collapsed);
+    if (currentOptions.target) {
+      const element = document.querySelector(currentOptions.target);
+      // @ts-ignore
+      setOriginElement(element);
+      console.log("TARGET ELEMENT", currentOptions.target);
+    } else {
+      setOriginElement(null);
+    }
+  }, [currentOptions]);
+
+  logger.debug("Starting Rigobot with the following options");
+  logger.debug(`${JSON.stringify(currentOptions)}`);
+
+  return (
+    <ChatBubble
+      user={{
+        context: currentOptions.context || "",
+        token: chatAgentHash,
+        avatar: "",
+        nickname: "User",
+      }}
+      socketHost="https://ai.4geeks.com"
+      welcomeMessage={
+        currentOptions.welcomeMessage || "Hi! How can I help you! 👋"
+      }
+      host="https://rigobot.herokuapp.com"
+      purposeId={
+        currentOptions.purposeId ? currentOptions.purposeId : undefined
+      }
+      purposeSlug={
+        currentOptions.purposeSlug
+          ? currentOptions.purposeSlug
+          : "4geeks-academy-salesman"
+      }
+      chatAgentHash={chatAgentHash}
+      collapsed={isCollapsed}
+      originElement={originElement}
+      introVideo={currentOptions.introVideo}
+      completions={currentOptions.completions}
+      showBubble={currentOptions.showBubble}
+      highlight={currentOptions.highlight}
+    />
+  );
+};

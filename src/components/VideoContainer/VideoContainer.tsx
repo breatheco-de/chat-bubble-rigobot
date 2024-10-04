@@ -1,7 +1,7 @@
 /* eslint-disable no-useless-escape */
-
-import { TIntroVideo } from "../../types"
-import { VideoContainer } from "../ChatBubble/ChatBubbleStyles"
+import { TIntroVideo } from "../../types";
+import { useStore } from "../../utils/store";
+import { VideoContainer } from "../ChatBubble/ChatBubbleStyles";
 
 export const VideoDisplay = ({
   video,
@@ -10,6 +10,13 @@ export const VideoDisplay = ({
   video: TIntroVideo;
   inner: boolean;
 }) => {
+  const { showVideo, toggleVideo } = useStore((state) => ({
+    showVideo: state.showVideo,
+    toggleVideo: state.toggleVideo,
+  }));
+
+  if (!showVideo) return null;
+
   const isYouTubeUrl = (url: string) => {
     const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
     return youtubeRegex.test(url);
@@ -27,6 +34,25 @@ export const VideoDisplay = ({
     const videoId = getYouTubeId(video.url);
     return (
       <VideoContainer inner={inner ? "true" : "false"}>
+        <button
+          onClick={toggleVideo}
+          style={{
+            position: "absolute",
+            background: "white",
+            borderRadius: "50%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "40px",
+            height: "40px",
+            fontSize: "24px",
+            right: "20px",
+            top: "20px",
+            cursor: "pointer"
+          }}
+        >
+          &times;
+        </button>
         <iframe
           width="100%"
           height="100%"

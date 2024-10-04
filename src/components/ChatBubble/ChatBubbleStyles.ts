@@ -25,6 +25,7 @@ export const chatStyles = {
     borderRadius: "10px",
     boxSizing: "border-box",
     fontFamily: "'Lato', sans-serif",
+    border: `3px solid ${rootVariables.softBlue}`,
   },
   bubble: {
     position: "fixed",
@@ -61,7 +62,7 @@ export const chatStyles = {
   },
   messagesContainer: {
     padding: "16px",
-    paddingBottom: "100px",
+    paddingBottom: "300px",
     overflowY: "scroll",
     height: "100%",
     boxSizing: "border-box",
@@ -105,7 +106,7 @@ export const getContainerPosition = (
     }
 
     return {
-      position: "fixed",
+      position: "absolute",
       top: top !== "auto" ? top : undefined,
       left: left !== "auto" ? left : undefined,
       bottom: bottom !== "auto" ? bottom : undefined,
@@ -145,6 +146,7 @@ export const getBubbleStyles = (rootElement: Element) => {
 
     return {
       ...chatStyles.bubble,
+      position: "absolute",
       top: top !== "auto" ? top : undefined,
       left: left !== "auto" ? left : undefined,
       bottom: bottom !== "auto" ? bottom : undefined,
@@ -164,8 +166,7 @@ export const VideoContainer = styled.div<VideoContainerProps>`
   border-radius: ${(props) => (props.inner ? "0px" : "10px")};
   display: block;
   overflow: hidden;
- 
-  
+  position: relative;
 `;
 
 interface StyledMessageProps {
@@ -217,6 +218,7 @@ const radarWave = keyframes`
   100% {
     transform: scale(2);
     opacity: 0;
+    
   }
 `;
 
@@ -226,6 +228,7 @@ const fadeOut = keyframes`
   }
   100% {
     opacity: 0;
+    display: none
   }
 `;
 
@@ -247,9 +250,6 @@ export const RadarElement = styled.div<RadarElementProps>`
   top: ${(props) => `calc(${props.top})`};
   left: ${(props) => `calc(${props.left})`};
 `;
-
-
-
 
 const palpitating = keyframes`
   0% {
@@ -277,5 +277,5 @@ export const PalpitatingBubble = styled.div<PalpitatingBubbleProps>`
   height: ${(props) => props.height};
   background-color: ${rootVariables.activeColor};
   border-radius: 50%;
-  position: absolute
+  position: absolute;
 `;
