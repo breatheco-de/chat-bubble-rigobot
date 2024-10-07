@@ -1,12 +1,12 @@
 import { ChatBubble } from "../ChatBubble/ChatBubble";
 
 import { RigobotProps } from "../../types";
-import React, { useEffect, useState } from "react"
-import { logger } from "../../utils/utilities"
+import React, { useEffect, useState } from "react";
+import { logger } from "../../utils/utilities";
 
 export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   const [currentOptions, setCurrentOptions] = useState(options);
-  const [isCollapsed, setIsCollapsed] = useState(!options.collapsed);
+  const [isCollapsed, setIsCollapsed] = useState(Boolean(!options.collapsed));
   const [originElement, setOriginElement] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
