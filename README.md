@@ -87,17 +87,28 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rigobot Bubble</title>
+    <script src="https://unpkg.com/rigobot-chat-bubble@0.0.31/dist/main.js"></script>
   </head>
-  <body>
+  <body style="height: 300vh">
     <h1 id="chat-grow">s</h1>
-    <div style="position: fixed; top: 50%; right: 0" id="bottom-element">
+    <div style="position: absolute; top: 50%; right: 0" id="bottom-element">
       asdasd
     </div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div style="position: absolute; top: 50%; right: 50%" class="centered-element">
+      centered element
+    </div>
+    <div
+      style="position: absolute; bottom: 0%; right: 50%"
+      class="bottom-left-element"
+    >
+      bottom left element
+    </div>
+    
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         if (window.rigo) {
-          window.rigo.init("5ec6dfc30dasdasdasd5f7e78c851asda", {
+          // window.rigo.init("248b53865d6743519ef55b4ec65772a7", {
+          window.rigo.init("0839749d0baa4a51ac165d40b98f95f3", {
             loglevel: "debug",
             purposeSlug: "chayito",
             completions: [
@@ -108,21 +119,28 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
               },
             ],
 
-            // introVideo: {
-            //   url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
-            // },
+            introVideo: {
+              url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
+            },
             context: "The user is called: Lulú",
-            (user: { // This property is optional, use it only if the user is authenticated
+            user: {
               token: "some user token ",
-              nickname: "user nickname"
-            }),
+            },
           });
 
           window.rigo.show({
-            target: "#chat-grow",
-            showBubble: true,
-            collapsed: true,
+            // target: "#bottom-element",
+            showBubble: false, // To keep the bubble hidden until you want to show it
+            collapsed: false,
+            highlight: true,
           });
+
+          window.rigo.updateOptions({
+            showBubble: true, // Show the bubble when you want to, you can call this in any time
+            context: "Some new information about the context"
+          })
+
+
 
           // window.rigo.hide();
         } else {
@@ -132,6 +150,7 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
     </script>
   </body>
 </html>
+
 ```
 
 ### Options
