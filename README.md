@@ -65,14 +65,13 @@ Include the following script in your HTML file:
    window.rigo.hide();
    ```
 
-4. **Update Context**
+4. **Update options**
 
-   You can update the context of the chat bubble using the `updateContext` method. This can be useful if you want to change the context dynamically based on user interactions.
+   You can update the context of the chat bubble using the `updateOptions` method. This can be useful if you want to change the context dynamically based on user interactions.
 
    ```javascript
-   window.rigo.updateContext({
-     override: true,
-     payload: "New context information",
+   window.rigo.updateOptions({
+     target: "#some-selecter", // The selector of the element you want the Rigobot bubble to move to
    });
    ```
 
@@ -158,7 +157,8 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
 - `init(token: string, options?: Options)`: Initializes the chat bubble with the given token and options.
 - `show(Options)`: Displays the chat bubble with the specified options.
 - `hide()`: Hides the chat bubble.
-- `updateContext({ override: boolean, payload: string })`: Updates the context of the chat bubble.
+- `updateOptions(Options)`: Updates the options without triggering a new render of the chat bubble.
+- `
 
 ## License
 
