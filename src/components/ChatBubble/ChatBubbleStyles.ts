@@ -89,14 +89,14 @@ export const getContainerPosition = (
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    let top: number | "auto" = rect.bottom + (showBubble ? 70 : 0);
+    let top: number | "auto" = rect.bottom + (showBubble ? 50 : 0);
     let left: number | "auto" = rect.left;
     let bottom: number | "auto" = "auto";
     let right: number | "auto" = "auto";
 
     if (top + containerHeight > viewportHeight) {
       top = "auto";
-      bottom = viewportHeight - rect.top + (showBubble ? 70 : 0);
+      bottom = viewportHeight - rect.top + (showBubble ? 50 : 0);
     }
 
     // Adjust left and right if the container overflows the viewport
