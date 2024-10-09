@@ -324,9 +324,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   }, [originElementState]);
 
   useEffect(() => {
-    if (originElement) {
-      setOriginElementState(originElement as HTMLElement);
-    }
+    setOriginElementState(originElement as HTMLElement);
   }, [originElement]);
 
   const setOriginElementBySelector = (selector: string) => {

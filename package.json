@@ -1,13 +1,13 @@
 {
   "name": "rigobot-chat-bubble",
-  "version": "0.0.32",
+  "version": "0.0.34",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "node utils/prepareIndex.js --target dev && vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
