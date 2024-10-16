@@ -116,7 +116,10 @@ export const getContainerPosition = (
   }
 };
 
-export const getBubbleStyles = (rootElement: Element) => {
+export const getBubbleStyles = (
+  rootElement: HTMLElement | null,
+  prevStyles: any
+) => {
   const bubbleWidth = 50;
   const bubbleHeight = 50;
 
@@ -126,32 +129,43 @@ export const getBubbleStyles = (rootElement: Element) => {
     const rect = rootElement.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+    const elementBottom = rect.bottom;
+    let elementRight: number = rect.right;
 
-    let top: number | "auto" = rect.bottom;
-    let left: number | "auto" = rect.left;
-    let bottom: number | "auto" = "auto";
-    let right: number | "auto" = "auto";
+    let top: string | "auto" = "100%";
+    let left: string | "auto" = "100%";
+    let bottom: string | "auto" = "auto";
+    let right: string | "auto" = "auto";
 
-    // Adjust top and bottom if the bubble overflows the viewport
-    if (top + bubbleHeight > viewportHeight) {
+    if (prevStyles && "top" in prevStyles && prevStyles.top === "auto") {
       top = "auto";
-      bottom = viewportHeight - rect.top;
+      bottom = prevStyles.bottom;
+    }
+
+    if (prevStyles && "left" in prevStyles && prevStyles.left === "auto") {
+      left = "auto";
+      right = prevStyles.right;
+    }
+
+    if (top !== "auto" && elementBottom + bubbleHeight > viewportHeight) {
+      top = "auto";
+      bottom = "100%";
     }
 
     // Adjust left and right if the bubble overflows the viewport
-    if (left + bubbleWidth > viewportWidth) {
+    if (left !== "auto" && elementRight + bubbleWidth > viewportWidth) {
       left = "auto";
-      right = viewportWidth - rect.right;
+      right = "100%";
     }
 
     return {
       ...chatStyles.bubble,
       position: "absolute",
-      top: top !== "auto" ? top : undefined,
-      left: left !== "auto" ? left : undefined,
-      bottom: bottom !== "auto" ? bottom : undefined,
-      right: right !== "auto" ? right : undefined,
-      transition: "top 1s ease, left 1s ease",
+      top: top,
+      left: left,
+      bottom: bottom,
+      right: right,
+      transition: "top 1s ease, all 1s ease",
     };
   }
 };

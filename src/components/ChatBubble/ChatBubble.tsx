@@ -283,11 +283,15 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   purposeSlug,
   highlight,
 }) => {
-  const [isChatVisible, setIsChatVisible] = useState<boolean>(collapsed);
+  const [isChatVisible, setIsChatVisible] = useState<boolean>(!collapsed);
   const backdropRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [originElementState, setOriginElementState] =
     useState<HTMLElement | null>(originElement as HTMLElement);
+  const [bubbleStyles, setBubbleStyles] = useState(
+    getBubbleStyles(originElementState, null)
+  );
+  const bubbleStylesRef = useRef(bubbleStyles);
 
   const toggleChat = () => {
     setIsChatVisible(!isChatVisible);
@@ -320,7 +324,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   }, [isChatVisible]);
 
   useEffect(() => {
+    bubbleStylesRef.current = bubbleStyles;
+  }, [bubbleStyles]);
+
+  useEffect(() => {
     setIsChatVisible(false);
+    setBubbleStyles(
+      getBubbleStyles(originElementState, bubbleStylesRef.current)
+    );
   }, [originElementState]);
 
   useEffect(() => {
@@ -362,7 +373,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       {showBubble &&
         createPortal(
           // @ts-ignore
-          <div style={getBubbleStyles(originElementState)} onClick={toggleChat}>
+          <div style={bubbleStyles} onClick={toggleChat}>
             <RigoThumbnail />
             <RadarElement
               key={`${originElementState?.id}-${originElementState?.className}`}
@@ -372,7 +383,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               <PalpitatingBubble width="50px" height="50px" />
             )}
           </div>,
-          document.body
+
+          originElementState || document.body
         )}
 
       {isChatVisible &&
