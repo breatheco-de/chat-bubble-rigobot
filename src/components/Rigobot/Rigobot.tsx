@@ -6,7 +6,7 @@ import { logger } from "../../utils/utilities";
 
 export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   const [currentOptions, setCurrentOptions] = useState(options);
-  const [isCollapsed, setIsCollapsed] = useState(Boolean(!options.collapsed));
+
   const [originElement, setOriginElement] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -23,7 +23,6 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
 
   useEffect(() => {
     // Update isCollapsed and originElement whenever currentOptions change
-    setIsCollapsed(!currentOptions.collapsed);
     if (currentOptions.target) {
       const element = document.querySelector(currentOptions.target);
       // @ts-ignore
@@ -35,6 +34,7 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   }, [currentOptions]);
 
   logger.debug("Starting Rigobot with the following options");
+  console.log(currentOptions?.collapsed, "CURRENT OPTIONS");
   logger.debug(currentOptions);
 
   return (
@@ -59,7 +59,7 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
           : "4geeks-academy-salesman"
       }
       chatAgentHash={chatAgentHash}
-      collapsed={isCollapsed}
+      collapsed={Boolean(currentOptions?.collapsed)}
       originElement={originElement}
       introVideo={currentOptions.introVideo}
       completions={currentOptions.completions}

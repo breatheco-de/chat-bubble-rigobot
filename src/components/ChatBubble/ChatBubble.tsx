@@ -294,7 +294,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   purposeSlug,
   highlight,
 }) => {
-  const [isChatVisible, setIsChatVisible] = useState<boolean>(!collapsed);
+  const [isChatVisible, setIsChatVisible] = useState<boolean>(false);
   const backdropRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -310,6 +310,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   };
 
   useEffect(() => {
+    console.log(collapsed, "COLLAPSED RECEIVED", !collapsed);
+    
     setIsChatVisible(!collapsed);
   }, [collapsed]);
 
@@ -319,8 +321,6 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
       const rect = chatContainerRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
-      console.log(viewportWidth, "ANCHO DE LA VENTANA");
-      console.log(rect, "ANCHO DEL CONTENEDOR DEL CHAT");
 
       const bodyScrollHeight = document.body.scrollHeight;
       // Adjust horizontal position
@@ -347,10 +347,11 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
   useEffect(() => {
     bubbleStylesRef.current = bubbleStyles;
+    setIsChatVisible(!collapsed);
   }, [bubbleStyles]);
 
   useEffect(() => {
-    setIsChatVisible(false);
+    
     setBubbleStyles(
       getBubbleStyles(originElementState, bubbleStylesRef.current)
     );

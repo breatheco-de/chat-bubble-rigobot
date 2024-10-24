@@ -39,7 +39,7 @@ window.rigo = {
     this.token = token;
   },
   show: function (showOpts) {
-    logger.debug("Trying to show Rigobot");
+    logger.info("Showing Rigobot");
     if (this.container) {
       const options = {
         ...this.options,
@@ -81,7 +81,9 @@ window.rigo = {
   updateOptions: function (newOptions: Options) {
     logger.debug("Updating options for Rigobot");
     this.options = { ...this.options, ...newOptions };
-    logger.info(`Options updated: ${JSON.stringify(this.options)}`);
+    logger.info("Options updated to: ", this.options);
+
+    console.log(this.options, "OPTIONS");
 
     const event = new CustomEvent("optionsUpdated", { detail: this.options });
     window.dispatchEvent(event);
