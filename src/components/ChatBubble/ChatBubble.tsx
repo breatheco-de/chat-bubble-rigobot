@@ -19,7 +19,7 @@ import {
   ChatContainerStyled,
   chatStyles,
   getBubbleStyles,
-  getContainerPosition,
+  // getContainerPosition,
   PalpitatingBubble,
   RadarElement,
   rootVariables,
