@@ -191,14 +191,16 @@ export const StyledMessage = styled.div<StyledMessageProps>`
   background: transparent;
   color: black;
   display: flex;
-  gap: 6px;
+  width: 100%;
+  gap: 4px;
   margin-bottom: 10px;
   align-items: center;
-  word-break: break-word;
+  
   flex-direction: ${(props) => (props.sender === "ai" ? "row" : "row-reverse")};
 
+
   & p {
-    margin: 0 0 15px 0;
+    word-break: break-word;
   }
 
   > div {
@@ -255,7 +257,7 @@ interface RadarElementProps {
 }
 
 export const RadarElement = styled.div<RadarElementProps>`
-  animation: ${radarWave} 1s infinite, ${fadeOut} 6s forwards;
+animation: ${radarWave} 1s infinite, ${fadeOut} 6s forwards;
   width: ${(props) => props.width};
   height: ${(props) => props.height};
   background-color: transparent;

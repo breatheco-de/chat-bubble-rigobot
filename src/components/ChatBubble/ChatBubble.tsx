@@ -376,10 +376,15 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       logger.debug("Target element found! Calculating radar dimensions");
       const rect = originElementState.getBoundingClientRect();
 
+      const top =
+        bubbleStyles.bottom === "auto"
+          ? `-${rect.height * 2}px`
+          : `${rect.height}px`;
+
       return {
         width: `${rect.width}px`,
         height: `${rect.height}px`,
-        top: `${rect.height}px`,
+        top: top,
         left: `-${rect.width + 50}px`,
         right: undefined,
       };
