@@ -325,16 +325,16 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       const bodyScrollHeight = document.body.scrollHeight;
       // Adjust horizontal position
       if (rect.right > viewportWidth) {
-        chatContainerRef.current.style.right = `0px`;
+        chatContainerRef.current.style.right = `5px`;
         logger.debug("Right side of chat bubble is out of viewport");
       } else if (rect.left < 0) {
         chatContainerRef.current.style.left = "0px";
       }
-      
+
       // Adjust vertical position
       if (rect.bottom > bodyScrollHeight) {
         console.log("Setting top to", bodyScrollHeight - rect.height);
-        
+
         chatContainerRef.current.style.top = `${
           bodyScrollHeight - rect.height
         }px`;
@@ -375,11 +375,13 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     if (originElementState) {
       logger.debug("Target element found! Calculating radar dimensions");
       const rect = originElementState.getBoundingClientRect();
+
       return {
         width: `${rect.width}px`,
         height: `${rect.height}px`,
-        top: `${rect.top}px`,
-        left: `${rect.left}px`,
+        top: `${rect.height}px`,
+        left: `-${rect.width + 50}px`,
+        right: undefined,
       };
     }
     return {
@@ -387,6 +389,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       height: "0px",
       top: "0px",
       left: "0px",
+      right: "auto",
     };
   };
 
@@ -397,10 +400,12 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           // @ts-ignore
           <div style={bubbleStyles} ref={containerRef}>
             <RigoThumbnail onClick={toggleChat} />
-            <RadarElement
-              key={`${originElementState?.id}-${originElementState?.className}`}
-              {...getRadarElementProps()}
-            />
+            <div style={{ position: "relative" }}>
+              <RadarElement
+                key={`${originElementState?.id}-${originElementState?.className}`}
+                {...getRadarElementProps()}
+              />
+            </div>
             {Boolean(highlight) && (
               <PalpitatingBubble
                 onClick={toggleChat}

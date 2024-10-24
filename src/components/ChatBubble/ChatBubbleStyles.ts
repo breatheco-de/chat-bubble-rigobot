@@ -39,7 +39,6 @@ export const chatStyles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    cursor: "pointer",
   },
   onlineCircle: {
     width: "10px",
@@ -59,6 +58,7 @@ export const chatStyles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    cursor: "pointer",
     background: rootVariables.activeColor,
   },
   messagesContainer: {
@@ -250,7 +250,8 @@ interface RadarElementProps {
   width: string;
   height: string;
   top: string;
-  left: string;
+  left: string | undefined;
+  right: string | undefined;
 }
 
 export const RadarElement = styled.div<RadarElementProps>`
@@ -260,9 +261,10 @@ export const RadarElement = styled.div<RadarElementProps>`
   background-color: transparent;
   border: 4px solid red;
   border-radius: 5px;
-  position: fixed;
+  position: absolute;
   top: ${(props) => `calc(${props.top})`};
-  left: ${(props) => `calc(${props.left})`};
+  left: ${(props) => (props.left ? `calc(${props.left})` : "0px")};
+  right: ${(props) => (props.right ? `calc(${props.right})` : "0px")};
 `;
 
 const palpitating = keyframes`
@@ -298,7 +300,7 @@ export const ChatContainerStyled = styled.div`
   background-color: white;
   border-radius: 10px;
   position: absolute;
-  width: min(400px, 100vw);
+  width: min(400px, 85vw);
   bottom: 60px;
   z-index: 1000;
 `;

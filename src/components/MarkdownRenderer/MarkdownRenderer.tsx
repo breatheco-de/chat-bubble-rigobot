@@ -16,7 +16,12 @@ const MarkdownRenderer = ({ markdown }: { markdown: string }) => {
     return { __html: rawMarkup };
   };
 
-  return <div dangerouslySetInnerHTML={getMarkdownText()} />;
+  return (
+    <div
+      style={{ maxWidth: "100%" }}
+      dangerouslySetInnerHTML={getMarkdownText()}
+    />
+  );
 };
 
 export default MarkdownRenderer;
