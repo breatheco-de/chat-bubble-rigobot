@@ -310,18 +310,11 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   };
 
   useEffect(() => {
-    setIsChatVisible(collapsed);
+    setIsChatVisible(!collapsed);
   }, [collapsed]);
 
   useEffect(() => {
-    logger.debug("Checking chat bubble position");
-    console.log(containerRef.current);
-
     if (isChatVisible && containerRef.current) {
-      console.log(
-        chatContainerRef.current,
-        "REFERENCIA DEL CONTENEDOR DEL CHAT"
-      );
       if (!chatContainerRef.current) return;
 
       const rect = chatContainerRef.current.getBoundingClientRect();
@@ -337,7 +330,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       } else if (rect.left < 0) {
         chatContainerRef.current.style.left = "0px";
       }
-
+      
       // Adjust vertical position
       if (rect.bottom > bodyScrollHeight) {
         console.log("Setting top to", bodyScrollHeight - rect.height);
