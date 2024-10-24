@@ -60,7 +60,7 @@ window.rigo = {
           <Rigobot chatAgentHash={this.token!} options={this.options} />
         </React.StrictMode>
       );
-      logger.info("Rigobot is active!");
+      logger.info("Calling show method", "Rigobot is active!");
       return "Now Rigobot is active!";
     } else {
       logger.error(
@@ -86,25 +86,4 @@ window.rigo = {
     const event = new CustomEvent("optionsUpdated", { detail: this.options });
     window.dispatchEvent(event);
   },
-  // updateContext: function ({ override = true, payload }) {
-  //   logger.debug("Updating context for Rigobot");
-  //   if (this.root) {
-  //     const newContext = override
-  //       ? payload
-  //       : `${this.options!.context} ${payload}`;
-  //     this.options!.context = newContext;
-  //     this.root.render(
-  //       <React.StrictMode>
-  //         <Rigobot
-  //           chatAgentHash={this.token!}
-  //           options={{ ...this.options!, context: newContext }}
-  //         />
-  //       </React.StrictMode>
-  //     );
-  //   } else {
-  //     logger.error(
-  //       "A React root was not found! Impossible to update context, first init Rigobot"
-  //     );
-  //   }
-  // },
 };

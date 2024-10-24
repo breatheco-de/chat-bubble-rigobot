@@ -65,7 +65,7 @@ export const chatStyles = {
     padding: "16px",
     paddingBottom: "300px",
     overflowY: "scroll",
-    height: "100%",
+    maxHeight: "500px",
     boxSizing: "border-box",
     fontFamily: "'Lato', sans-serif",
     scrollbarWidth: "none",
@@ -194,7 +194,7 @@ export const StyledMessage = styled.div<StyledMessageProps>`
   gap: 6px;
   margin-bottom: 10px;
   align-items: center;
-
+  word-break: break-word;
   flex-direction: ${(props) => (props.sender === "ai" ? "row" : "row-reverse")};
 
   & p {
@@ -299,6 +299,6 @@ export const ChatContainerStyled = styled.div`
   border-radius: 10px;
   position: absolute;
   width: min(400px, 100vw);
-  right: 0;
-  bottom: 0;
+  bottom: 60px;
+  z-index: 1000;
 `;

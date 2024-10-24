@@ -175,7 +175,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       userToken: "",
       host: host,
     });
-    console.log("Initializing chat", json);
+    logger.debug("Initializing chat", json);
 
     if (storedMessages.length > 0) {
       setMessages(storedMessages);
@@ -232,10 +232,13 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     <div
       style={{
         position: "relative",
-        height: "500px",
+        height: "600px",
         width: "100%",
-        paddingBottom: "200px",
         overflowY: "hidden",
+        border: "1px solid #ccc",
+        boxSizing: "border-box",
+        borderRadius: "10px",
+        backgroundColor: "white",
       }}
     >
       {/* @ts-ignore */}
@@ -247,6 +250,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
             gap: "10px",
             color: "white",
             fontWeight: 500,
+            scrollbarWidth: "none",
           }}
         >
           <RigoThumbnail withOnline={true} />
@@ -260,7 +264,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       </div>
       {introVideo && <VideoDisplay inner={true} video={introVideo} />}
       {/* @ts-ignore */}
-      <div className="chat-messages" style={chatStyles.messagesContainer}>
+      <div style={chatStyles.messagesContainer}>
         {messages.map((message, index) => (
           <Message message={message} key={index} />
         ))}
@@ -293,6 +297,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   const [isChatVisible, setIsChatVisible] = useState<boolean>(!collapsed);
   const backdropRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const [originElementState, setOriginElementState] =
     useState<HTMLElement | null>(originElement as HTMLElement);
   const [bubbleStyles, setBubbleStyles] = useState(
@@ -309,23 +314,40 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   }, [collapsed]);
 
   useEffect(() => {
-    if (isChatVisible && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+    logger.debug("Checking chat bubble position");
+    console.log(containerRef.current);
 
+    if (isChatVisible && containerRef.current) {
+      console.log(
+        chatContainerRef.current,
+        "REFERENCIA DEL CONTENEDOR DEL CHAT"
+      );
+      if (!chatContainerRef.current) return;
+
+      const rect = chatContainerRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      console.log(viewportWidth, "ANCHO DE LA VENTANA");
+      console.log(rect, "ANCHO DEL CONTENEDOR DEL CHAT");
+
+      const bodyScrollHeight = document.body.scrollHeight;
       // Adjust horizontal position
       if (rect.right > viewportWidth) {
-        containerRef.current.style.left = `${viewportWidth - rect.width}px`;
+        chatContainerRef.current.style.right = `0px`;
+        logger.debug("Right side of chat bubble is out of viewport");
       } else if (rect.left < 0) {
-        containerRef.current.style.left = "0px";
+        chatContainerRef.current.style.left = "0px";
       }
 
       // Adjust vertical position
-      if (rect.bottom > viewportHeight) {
-        containerRef.current.style.top = `${viewportHeight - rect.height}px`;
+      if (rect.bottom > bodyScrollHeight) {
+        console.log("Setting top to", bodyScrollHeight - rect.height);
+        
+        chatContainerRef.current.style.top = `${
+          bodyScrollHeight - rect.height
+        }px`;
       } else if (rect.top < 0) {
-        containerRef.current.style.top = "0px";
+        console.log("Setting top to 0");
+        chatContainerRef.current.style.top = "80px";
       }
     }
   }, [isChatVisible]);
@@ -380,7 +402,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       {showBubble &&
         createPortal(
           // @ts-ignore
-          <div style={bubbleStyles}>
+          <div style={bubbleStyles} ref={containerRef}>
             <RigoThumbnail onClick={toggleChat} />
             <RadarElement
               key={`${originElementState?.id}-${originElementState?.className}`}
@@ -396,7 +418,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
             {isChatVisible && (
               // @ts-ignore
-              <ChatContainerStyled>
+              <ChatContainerStyled ref={chatContainerRef}>
                 <ChatMessages
                   user={user}
                   host={host}
