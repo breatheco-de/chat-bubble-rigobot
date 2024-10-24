@@ -9,13 +9,7 @@ interface Rigo {
   init: (token: string, options?: Options) => void;
   show: (params: Options) => void;
   hide: () => void;
-  updateContext: ({
-    override,
-    payload,
-  }: {
-    override?: boolean;
-    payload: string;
-  }) => void;
+  updateOptions: (newOptions: Options) => void;
   container?: HTMLElement;
   options?: Options;
   token?: string;
@@ -83,15 +77,8 @@ window.rigo = {
       logger.debug("Impossible to hide, a React root was not found!");
     }
   },
-  // @ts-ignore
-  test: function () {
-    if (this.options?.target) {
-      this.options.target = ".bottom-left-element";
-    }
-    return "Ready";
-  },
-  // @ts-ignore
-  updateOptions: function (newOptions) {
+
+  updateOptions: function (newOptions: Options) {
     logger.debug("Updating options for Rigobot");
     this.options = { ...this.options, ...newOptions };
     logger.info(`Options updated: ${JSON.stringify(this.options)}`);
@@ -99,25 +86,25 @@ window.rigo = {
     const event = new CustomEvent("optionsUpdated", { detail: this.options });
     window.dispatchEvent(event);
   },
-  updateContext: function ({ override = true, payload }) {
-    logger.debug("Updating context for Rigobot");
-    if (this.root) {
-      const newContext = override
-        ? payload
-        : `${this.options!.context} ${payload}`;
-      this.options!.context = newContext;
-      this.root.render(
-        <React.StrictMode>
-          <Rigobot
-            chatAgentHash={this.token!}
-            options={{ ...this.options!, context: newContext }}
-          />
-        </React.StrictMode>
-      );
-    } else {
-      logger.error(
-        "A React root was not found! Impossible to update context, first init Rigobot"
-      );
-    }
-  },
+  // updateContext: function ({ override = true, payload }) {
+  //   logger.debug("Updating context for Rigobot");
+  //   if (this.root) {
+  //     const newContext = override
+  //       ? payload
+  //       : `${this.options!.context} ${payload}`;
+  //     this.options!.context = newContext;
+  //     this.root.render(
+  //       <React.StrictMode>
+  //         <Rigobot
+  //           chatAgentHash={this.token!}
+  //           options={{ ...this.options!, context: newContext }}
+  //         />
+  //       </React.StrictMode>
+  //     );
+  //   } else {
+  //     logger.error(
+  //       "A React root was not found! Impossible to update context, first init Rigobot"
+  //     );
+  //   }
+  // },
 };

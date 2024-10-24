@@ -21,9 +21,10 @@ export const chatStyles = {
     boxSizing: "border-box",
   },
   chatContainer: {
-    width: "400px",
+    minWidth: "400px",
     borderRadius: "10px",
     boxSizing: "border-box",
+    height: "auto",
     fontFamily: "'Lato', sans-serif",
     border: `3px solid ${rootVariables.softBlue}`,
   },
@@ -68,7 +69,6 @@ export const chatStyles = {
     boxSizing: "border-box",
     fontFamily: "'Lato', sans-serif",
     scrollbarWidth: "none",
-    background: "white",
   },
 };
 
@@ -292,4 +292,13 @@ export const PalpitatingBubble = styled.div<PalpitatingBubbleProps>`
   background-color: ${rootVariables.activeColor};
   border-radius: 50%;
   position: absolute;
+`;
+
+export const ChatContainerStyled = styled.div`
+  background-color: white;
+  border-radius: 10px;
+  position: absolute;
+  width: min(400px, 100vw);
+  right: 0;
+  bottom: 0;
 `;

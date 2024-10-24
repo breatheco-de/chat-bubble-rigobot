@@ -28,24 +28,24 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
       const element = document.querySelector(currentOptions.target);
       // @ts-ignore
       setOriginElement(element);
-      console.log("TARGET ELEMENT", currentOptions.target);
+      logger.debug("MOVING TO TARGET ELEMENT", element);
     } else {
       setOriginElement(null);
     }
   }, [currentOptions]);
 
   logger.debug("Starting Rigobot with the following options");
-  logger.debug(`${JSON.stringify(currentOptions)}`);
+  logger.debug(currentOptions);
 
   return (
     <ChatBubble
       user={{
-        context: currentOptions.context || "",
-        token: chatAgentHash,
+        context: currentOptions.user?.context || "",
+        token: currentOptions.user?.token || "",
         avatar: "",
-        nickname: "User",
+        nickname: currentOptions.user?.nickname || "User",
       }}
-      socketHost="https://ai.4geeks.com"
+      socketHost={currentOptions.socketHost || "https://ai.4geeks.com"}
       welcomeMessage={
         currentOptions.welcomeMessage || "Hi! How can I help you! 👋"
       }

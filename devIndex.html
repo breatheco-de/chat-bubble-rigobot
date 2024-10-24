@@ -9,7 +9,7 @@
   <body style="height: 300vh">
     <h1 id="chat-grow">s</h1>
     <button onclick="moveRigo()">Move RIgo</button>
-    <div style="position: absolute; top: 50%; right: 0" id="bottom-element">
+    <div style="position: absolute; top: 3000px; right: 50%" id="bottom-element">
       asdasd
     </div>
     <div
@@ -41,6 +41,9 @@
         const randomElement = possibilities[randomIndex];
         window.rigo.updateOptions({
           target: randomElement,
+          user: {
+            token: "some user token ",
+          },
         });
       }
     </script>
@@ -59,7 +62,7 @@
                 DOMTarget: "#chat-grow",
               },
             ],
-
+            socketHost: "http://127.0.0.1:8000",
             introVideo: {
               url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
             },

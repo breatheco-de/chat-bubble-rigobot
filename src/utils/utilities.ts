@@ -23,25 +23,28 @@ export const logger = {
   init: (loglevel: string) => {
     logger.loglevel = loglevel;
   },
-  debug: (msg: string) => {
+  log: (...args: any[]) => {
+    console.log(...args); // This will log any number of arguments passed to it
+  },
+  debug: (...args: any[]) => {
     if (
       typeof logger.loglevel === "string" &&
       logger.loglevel.toLowerCase() === "debug"
     ) {
-      console.log(`DEBUG: ${msg}`);
+      console.log(`DEBUG:`, ...args); // Log multiple arguments
     }
   },
-  info: (msg: string) => {
+  info: (...args: any[]) => {
     if (
       typeof logger.loglevel === "string" &&
       (logger.loglevel.toLowerCase() === "info" ||
         logger.loglevel.toLowerCase() === "debug")
     ) {
-      console.log(`INFO: ${msg}`);
+      console.log(`INFO:`, ...args); // Log multiple arguments
     }
   },
-  error: (msg: string) => {
-    console.error(`ERROR: ${msg}`);
+  error: (...args: any[]) => {
+    console.error(`ERROR:`, ...args); // Log multiple arguments
   },
 };
 
@@ -50,7 +53,11 @@ export function convertMarkdownToHTML(markdownText: string) {
   return md.render(markdownText);
 }
 
-export const createContext = (userContext: string, completions: string) => {
+export const createContext = (
+  userContext: string,
+  completions: string,
+  prevConversation: string
+) => {
   const innerContext = `
   This context is related to the user or the environment:
   """
@@ -67,6 +74,11 @@ export const createContext = (userContext: string, completions: string) => {
 
   This will move the chat bubble where your answer are being displayed to an element the user should see. THIS IS MANDATORY is you are using information from the provided completions and the completion have a 'DOMTarget' property.
   Inside the XML tag must be DOMTarget selector is provided. Else please do not add the XML tag.
+
+  Here is the previous conversation, follow it naturally:
+  """
+  ${prevConversation}
+  """
   `;
 
   return innerContext;

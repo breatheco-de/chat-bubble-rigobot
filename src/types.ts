@@ -62,14 +62,21 @@ export interface Options {
   collapsed?: boolean;
   purposeId?: number;
   purposeSlug?: string;
+  highlight?: boolean;
+  loglevel?: "debug" | "info";
   bubblePosition?: {
     top?: string;
     left?: string;
     right?: string;
     bottom?: string;
   };
-  highlight?: boolean;
-  loglevel?: "debug" | "info";
+  user?: {
+    token?: string;
+    avatar?: string;
+    nickname?: string;
+    context?: string;
+  };
+  socketHost?: string;
 }
 
 export interface RigobotProps {

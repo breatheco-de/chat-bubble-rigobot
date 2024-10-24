@@ -16,6 +16,7 @@ import {
   logger,
 } from "../../utils/utilities";
 import {
+  ChatContainerStyled,
   chatStyles,
   getBubbleStyles,
   getContainerPosition,
@@ -115,7 +116,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     newSocket.connect();
 
     const onStartData = {
-      token: user.token || chatAgentHash,
+      token: chatAgentHash || user.token,
       purpose: purposeId || purposeSlug,
       conversationId: conversationId,
     };
@@ -171,9 +172,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       chatAgentHash: chatAgentHash,
       purposeId: purposeId,
       purposeSlug: purposeSlug,
-      userToken: user.token || "",
+      userToken: "",
       host: host,
     });
+    console.log("Initializing chat", json);
 
     if (storedMessages.length > 0) {
       setMessages(storedMessages);
@@ -188,7 +190,11 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         message: {
           type: "user",
           text: inputValue,
-          context: createContext(user.context, JSON.stringify(completions)),
+          context: createContext(
+            user.context,
+            JSON.stringify(completions),
+            messages.map((m) => `${m.sender}: ${m.text}`).join("\n")
+          ),
         },
         conversation: {
           id: conversationId,
@@ -227,6 +233,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       style={{
         position: "relative",
         height: "500px",
+        width: "100%",
         paddingBottom: "200px",
         overflowY: "hidden",
       }}
@@ -373,52 +380,42 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       {showBubble &&
         createPortal(
           // @ts-ignore
-          <div style={bubbleStyles} onClick={toggleChat}>
-            <RigoThumbnail />
+          <div style={bubbleStyles}>
+            <RigoThumbnail onClick={toggleChat} />
             <RadarElement
               key={`${originElementState?.id}-${originElementState?.className}`}
               {...getRadarElementProps()}
             />
             {Boolean(highlight) && (
-              <PalpitatingBubble width="50px" height="50px" />
+              <PalpitatingBubble
+                onClick={toggleChat}
+                width="50px"
+                height="50px"
+              />
+            )}
+
+            {isChatVisible && (
+              // @ts-ignore
+              <ChatContainerStyled>
+                <ChatMessages
+                  user={user}
+                  host={host}
+                  purposeId={purposeId}
+                  purposeSlug={purposeSlug}
+                  chatAgentHash={chatAgentHash}
+                  socketHost={socketHost}
+                  closeChat={toggleChat}
+                  welcomeMessage={welcomeMessage}
+                  completions={completions}
+                  backdropRef={backdropRef}
+                  introVideo={introVideo}
+                  setOriginElementBySelector={setOriginElementBySelector}
+                />
+              </ChatContainerStyled>
             )}
           </div>,
 
           originElementState || document.body
-        )}
-
-      {isChatVisible &&
-        createPortal(
-          <div
-            ref={containerRef}
-            style={{
-              ...getContainerPosition(originElementState, showBubble, 400, 600),
-              display: "flex",
-              background: "white",
-              padding: "8px",
-              gap: "16px",
-              borderRadius: "10px",
-            }}
-          >
-            {/* @ts-ignore */}
-            <div style={chatStyles.chatContainer}>
-              <ChatMessages
-                user={user}
-                host={host}
-                purposeId={purposeId}
-                purposeSlug={purposeSlug}
-                chatAgentHash={chatAgentHash}
-                socketHost={socketHost}
-                closeChat={toggleChat}
-                welcomeMessage={welcomeMessage}
-                completions={completions}
-                backdropRef={backdropRef}
-                introVideo={introVideo}
-                setOriginElementBySelector={setOriginElementBySelector}
-              />
-            </div>
-          </div>,
-          document.body
         )}
     </>
   );

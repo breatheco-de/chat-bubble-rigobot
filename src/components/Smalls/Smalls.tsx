@@ -5,10 +5,16 @@ import { chatStyles, StyledMessage } from "../ChatBubble/ChatBubbleStyles";
 import { svgs } from "../../assets/svgs";
 import MarkdownRenderer from "../MarkdownRenderer/MarkdownRenderer";
 
-export const RigoThumbnail = ({ withOnline = false }) => {
+export const RigoThumbnail = ({
+  withOnline = false,
+  onClick = () => {},
+}: {
+  withOnline?: boolean;
+  onClick?: () => void;
+}) => {
   return (
     // @ts-ignore
-    <div style={chatStyles.thumbnail}>
+    <div onClick={onClick} style={chatStyles.thumbnail}>
       {svgs.rigoSvg}
       {withOnline && (
         <div
