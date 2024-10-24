@@ -83,8 +83,6 @@ window.rigo = {
     this.options = { ...this.options, ...newOptions };
     logger.info("Options updated to: ", this.options);
 
-    console.log(this.options, "OPTIONS");
-
     const event = new CustomEvent("optionsUpdated", { detail: this.options });
     window.dispatchEvent(event);
   },

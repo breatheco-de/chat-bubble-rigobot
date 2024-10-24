@@ -310,8 +310,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   };
 
   useEffect(() => {
-    console.log(collapsed, "COLLAPSED RECEIVED", !collapsed);
-    
+
     setIsChatVisible(!collapsed);
   }, [collapsed]);
 
@@ -333,13 +332,10 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
       // Adjust vertical position
       if (rect.bottom > bodyScrollHeight) {
-        console.log("Setting top to", bodyScrollHeight - rect.height);
-
         chatContainerRef.current.style.top = `${
           bodyScrollHeight - rect.height
         }px`;
       } else if (rect.top < 0) {
-        console.log("Setting top to 0");
         chatContainerRef.current.style.top = "80px";
       }
     }

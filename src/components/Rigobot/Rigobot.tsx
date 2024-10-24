@@ -34,7 +34,6 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   }, [currentOptions]);
 
   logger.debug("Starting Rigobot with the following options");
-  console.log(currentOptions?.collapsed, "CURRENT OPTIONS");
   logger.debug(currentOptions);
 
   return (
