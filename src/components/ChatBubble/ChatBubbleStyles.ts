@@ -195,12 +195,14 @@ export const StyledMessage = styled.div<StyledMessageProps>`
   gap: 4px;
   margin-bottom: 10px;
   align-items: center;
-  
+  white-space: normal;
+  text-align: left;
   flex-direction: ${(props) => (props.sender === "ai" ? "row" : "row-reverse")};
 
 
   & p {
     word-break: break-word;
+    margin: 0;
   }
 
   > div {
