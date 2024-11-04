@@ -33,10 +33,21 @@ export const RigoThumbnail = ({
   );
 };
 
-export const Message = ({ message }: { message: any }) => {
+export const Message = ({ user, message }: { user: any; message: any }) => {
+  console.log(user, "USer");
+
   return (
     <StyledMessage sender={message.sender}>
-      {message.sender === "ai" ? <RigoThumbnail /> : <span>{svgs.person}</span>}
+      {message.sender === "ai" && <RigoThumbnail />}
+      {message.sender === "user" && user.avatar && (
+        <div style={{ background: "white" }}>
+          <img
+            style={{ width: "20px", height: "20px", borderRadius: "50%" }}
+            src={user.avatar}
+          />
+        </div>
+      )}
+      {message.sender === "user" && !user.avatar && <span>{svgs.person}</span>}
       <MarkdownRenderer markdown={message.text} />
     </StyledMessage>
   );

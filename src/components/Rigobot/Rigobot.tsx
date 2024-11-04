@@ -41,7 +41,7 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
       user={{
         context: currentOptions.user?.context || "",
         token: currentOptions.user?.token || "",
-        avatar: "",
+        avatar: currentOptions.user?.avatar || "",
         nickname: currentOptions.user?.nickname || "User",
       }}
       socketHost={currentOptions.socketHost || "https://ai.4geeks.com"}

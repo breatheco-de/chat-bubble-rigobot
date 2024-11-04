@@ -73,7 +73,9 @@ const ChatInput = ({
           outline: `1px solid ${rootVariables.lightGrey}`,
         }}
       />
-      <span onClick={onSubmit}>{svgs.send}</span>
+      <span style={{ cursor: "pointer" }} onClick={onSubmit}>
+        {svgs.send}
+      </span>
     </div>
   );
 };
@@ -109,6 +111,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
+    { text: welcomeMessage, sender: "user" },
     ...storedMessages,
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -274,7 +277,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           }}
         >
           <RigoThumbnail withOnline={true} />
-          <p>Rigobot AI </p>
+          <p>Rigobot AI</p>
         </section>
         <section>
           <span style={{ cursor: "pointer" }} onClick={closeChat}>
@@ -286,7 +289,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       {/* @ts-ignore */}
       <div style={chatStyles.messagesContainer}>
         {messages.map((message, index) => (
-          <Message message={message} key={index} />
+          <Message user={user} message={message} key={index} />
         ))}
       </div>
       <ChatInput
