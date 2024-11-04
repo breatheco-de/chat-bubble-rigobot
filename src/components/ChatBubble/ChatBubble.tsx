@@ -73,6 +73,7 @@ const ChatInput = ({
           borderRadius: "11px",
           border: `1px solid ${rootVariables.lightGrey}`,
           color: "black",
+          background: "white",
           outline: `1px solid ${rootVariables.lightGrey}`,
         }}
       />
@@ -310,7 +311,6 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   };
 
   useEffect(() => {
-
     setIsChatVisible(!collapsed);
   }, [collapsed]);
 
@@ -347,7 +347,6 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   }, [bubbleStyles]);
 
   useEffect(() => {
-    
     setBubbleStyles(
       getBubbleStyles(originElementState, bubbleStylesRef.current)
     );
@@ -397,48 +396,50 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
   return (
     <>
-      {showBubble &&
-        createPortal(
-          // @ts-ignore
-          <div style={bubbleStyles} ref={containerRef}>
-            <RigoThumbnail onClick={toggleChat} />
-            <div style={{ position: "relative" }}>
-              <RadarElement
-                key={`${originElementState?.id}-${originElementState?.className}`}
-                {...getRadarElementProps()}
-              />
-            </div>
-            {Boolean(highlight) && (
-              <PalpitatingBubble
-                onClick={toggleChat}
-                width="50px"
-                height="50px"
-              />
-            )}
-
-            {isChatVisible && (
-              // @ts-ignore
-              <ChatContainerStyled ref={chatContainerRef}>
-                <ChatMessages
-                  user={user}
-                  host={host}
-                  purposeId={purposeId}
-                  purposeSlug={purposeSlug}
-                  chatAgentHash={chatAgentHash}
-                  socketHost={socketHost}
-                  closeChat={toggleChat}
-                  welcomeMessage={welcomeMessage}
-                  completions={completions}
-                  backdropRef={backdropRef}
-                  introVideo={introVideo}
-                  setOriginElementBySelector={setOriginElementBySelector}
+      {createPortal(
+        // @ts-ignore
+        <div style={bubbleStyles} ref={containerRef}>
+          {showBubble && (
+            <>
+              <RigoThumbnail onClick={toggleChat} />
+              <div style={{ position: "relative" }}>
+                <RadarElement
+                  key={`${originElementState?.id}-${originElementState?.className}`}
+                  {...getRadarElementProps()}
                 />
-              </ChatContainerStyled>
-            )}
-          </div>,
+              </div>
+              {Boolean(highlight) && (
+                <PalpitatingBubble
+                  onClick={toggleChat}
+                  width="50px"
+                  height="50px"
+                />
+              )}
+            </>
+          )}
+          {isChatVisible && (
+            // @ts-ignore
+            <ChatContainerStyled ref={chatContainerRef}>
+              <ChatMessages
+                user={user}
+                host={host}
+                purposeId={purposeId}
+                purposeSlug={purposeSlug}
+                chatAgentHash={chatAgentHash}
+                socketHost={socketHost}
+                closeChat={toggleChat}
+                welcomeMessage={welcomeMessage}
+                completions={completions}
+                backdropRef={backdropRef}
+                introVideo={introVideo}
+                setOriginElementBySelector={setOriginElementBySelector}
+              />
+            </ChatContainerStyled>
+          )}
+        </div>,
 
-          originElementState || document.body
-        )}
+        originElementState || document.body
+      )}
     </>
   );
 };

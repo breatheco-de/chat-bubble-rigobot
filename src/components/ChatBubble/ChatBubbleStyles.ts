@@ -34,7 +34,7 @@ export const chatStyles = {
     right: "20px",
     width: "50px",
     height: "50px",
-    background: rootVariables.activeColor,
+    background: "transparent",
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
@@ -199,7 +199,6 @@ export const StyledMessage = styled.div<StyledMessageProps>`
   text-align: left;
   flex-direction: ${(props) => (props.sender === "ai" ? "row" : "row-reverse")};
 
-
   & p {
     word-break: break-word;
     margin: 0;
@@ -259,7 +258,7 @@ interface RadarElementProps {
 }
 
 export const RadarElement = styled.div<RadarElementProps>`
-animation: ${radarWave} 1s infinite, ${fadeOut} 6s forwards;
+  animation: ${radarWave} 1s infinite, ${fadeOut} 6s forwards;
   width: ${(props) => props.width};
   height: ${(props) => props.height};
   background-color: transparent;
