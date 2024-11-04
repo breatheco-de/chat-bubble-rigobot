@@ -1,13 +1,9 @@
-/* eslint-disable no-useless-escape */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import "@fontsource/lato";
 import "highlight.js/styles/github.css";
 
 import React, { useState, useEffect, useRef } from "react";
 
 import { svgs } from "../../assets/svgs";
-import { io, Socket } from "socket.io-client";
 import { ChatBubbleProps, ChatMessagesProps } from "../../types";
 import {
   createContext,
@@ -95,9 +91,20 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   purposeSlug,
   setOriginElementBySelector,
 }) => {
-  const { storedMessages, setStoredMessages } = useStore((state) => ({
+  const {
+    storedMessages,
+    setStoredMessages,
+    socket,
+    connectSocket,
+    setConversationId,
+    conversationId,
+  } = useStore((state) => ({
     storedMessages: state.messages,
     setStoredMessages: state.setMessages,
+    socket: state.socket,
+    connectSocket: state.connectSocket,
+    setConversationId: state.setConversationId,
+    conversationId: state.conversationId,
   }));
 
   const [messages, setMessages] = useState([
@@ -105,16 +112,16 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     ...storedMessages,
   ]);
   const [inputValue, setInputValue] = useState("");
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
+
+  const [isTryingToMove, setIsTryingToMove] = useState<boolean>(false);
 
   useEffect(() => {
     if (!conversationId) return;
 
-    const newSocket = io(socketHost, { autoConnect: false });
-    setSocket(newSocket);
-
-    newSocket.connect();
+    if (!socket) {
+      connectSocket({ socketHost });
+      return;
+    }
 
     const onStartData = {
       token: chatAgentHash || user.token,
@@ -122,67 +129,79 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       conversationId: conversationId,
     };
 
-    newSocket.on("connect", () => {
+    socket.on("connect", () => {
       console.log("Socket connected");
-      newSocket.emit("start", onStartData);
+      socket.emit("start", onStartData);
     });
+  }, [conversationId, socket]);
 
-    newSocket.on("response", (message) => {
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("response", (message) => {
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
         const lastMessageIndex = updatedMessages.length - 1;
-        updatedMessages[lastMessageIndex].text += message.chunk;
+
+        let updatedText =
+          updatedMessages[lastMessageIndex].text + message.chunk;
+
+        if (updatedText.includes("<moveto>")) {
+          setIsTryingToMove(true);
+          updatedText = updatedText.split("<moveto>")[0];
+          updatedMessages[lastMessageIndex].text = updatedText;
+        }
+
+        if (!isTryingToMove) {
+          updatedMessages[lastMessageIndex].text += message.chunk;
+        }
+
         return updatedMessages;
       });
     });
 
-    newSocket.on("responseFinished", (data) => {
+    socket.on("responseFinished", (data) => {
+      console.log(isTryingToMove, " IS TRYING TO MOVE");
+
+      setIsTryingToMove(false);
       if (data.status === "ok") {
-        setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages];
-          const lastMessageIndex = updatedMessages.length - 1;
-          const message = updatedMessages[lastMessageIndex];
-          const result = extractMovetoContent(message.text);
-          updatedMessages[lastMessageIndex].text = result.textWithoutTags;
+        console.log(data);
 
-          if (result.targetElement) {
-            logger.debug(
-              `Moving chat to target element ${result.targetElement} as Rigobot requested `
-            );
-            setOriginElementBySelector(result.targetElement);
-          }
-
-          // @ts-ignore
-          setStoredMessages(updatedMessages);
-          return updatedMessages;
-        });
+        const response = data.ai_response;
+        const result = extractMovetoContent(response);
+        if (result.targetElement) {
+          logger.debug(
+            `Moving chat to target element ${result.targetElement} as Rigobot requested `
+          );
+          setOriginElementBySelector(result.targetElement);
+        }
       }
     });
-
     return () => {
-      newSocket.disconnect();
+      socket.off("response");
+      socket.off("responseFinished");
     };
-  }, [conversationId]);
+  }, [isTryingToMove, socket, conversationId]);
 
   useEffect(() => {
     initialize();
   }, [host, purposeId, chatAgentHash, user.token]);
 
   const initialize = async () => {
-    const json = await initConversation({
-      chatAgentHash: chatAgentHash,
-      purposeId: purposeId,
-      purposeSlug: purposeSlug,
-      userToken: "",
-      host: host,
-    });
-    logger.debug("Initializing chat", json);
-
     if (storedMessages.length > 0) {
       setMessages(storedMessages);
     }
-
-    setConversationId(json.conversation_id);
+    if (!conversationId) {
+      const json = await initConversation({
+        chatAgentHash: chatAgentHash,
+        purposeId: purposeId,
+        purposeSlug: purposeSlug,
+        userToken: "",
+        host: host,
+      });
+      logger.debug("Initializing chat", json);
+      setConversationId(json.conversation_id);
+    }
   };
 
   const handleSendMessage = () => {
@@ -343,7 +362,10 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
   useEffect(() => {
     bubbleStylesRef.current = bubbleStyles;
-    setIsChatVisible(!collapsed);
+    setIsChatVisible(false);
+    setTimeout(() => {
+      setIsChatVisible(!collapsed);
+    }, 100);
   }, [bubbleStyles]);
 
   useEffect(() => {
@@ -401,7 +423,10 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         <div style={bubbleStyles} ref={containerRef}>
           {showBubble && (
             <>
-              <RigoThumbnail onClick={toggleChat} />
+              <RigoThumbnail
+                moving={originElementState ? true : false}
+                onClick={toggleChat}
+              />
               <div style={{ position: "relative" }}>
                 <RadarElement
                   key={`${originElementState?.id}-${originElementState?.className}`}
@@ -418,7 +443,6 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
             </>
           )}
           {isChatVisible && (
-            // @ts-ignore
             <ChatContainerStyled ref={chatContainerRef}>
               <ChatMessages
                 user={user}

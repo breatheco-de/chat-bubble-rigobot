@@ -4,18 +4,25 @@
 import { chatStyles, StyledMessage } from "../ChatBubble/ChatBubbleStyles";
 import { svgs } from "../../assets/svgs";
 import MarkdownRenderer from "../MarkdownRenderer/MarkdownRenderer";
-
+import gif from "../../assets/bubble.gif";
 export const RigoThumbnail = ({
   withOnline = false,
   onClick = () => {},
+  moving = false,
 }: {
   withOnline?: boolean;
   onClick?: () => void;
+  moving?: boolean;
 }) => {
   return (
     // @ts-ignore
     <div onClick={onClick} style={chatStyles.thumbnail}>
-      {svgs.rigoSvg}
+      {moving ? (
+        <img style={{ maxWidth: "100%", height: "auto" }} src={gif} />
+      ) : (
+        svgs.rigoSvg
+      )}
+
       {withOnline && (
         <div
           // @ts-ignore
