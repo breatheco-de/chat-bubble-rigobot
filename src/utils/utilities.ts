@@ -59,7 +59,7 @@ export const createContext = (
   prevConversation: string
 ) => {
   const innerContext = `
-  This context is related to the user or the environment:
+  This context is related to the user and the environment:
   """
   ${userContext}
   """

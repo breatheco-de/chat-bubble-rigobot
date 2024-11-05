@@ -36,10 +36,20 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   logger.debug("Starting Rigobot with the following options");
   logger.debug(currentOptions);
 
+  const completeContext = `
+  ALL THIS CONTEXT IS IMPORTART FOR YOUR TASK
+  ---page context---
+  ${currentOptions.context}
+  ---
+
+  ---user context---
+  ${currentOptions.user?.context || ""}
+  ---
+  `;
   return (
     <ChatBubble
       user={{
-        context: currentOptions.user?.context || "",
+        context: completeContext,
         token: currentOptions.user?.token || "",
         avatar: currentOptions.user?.avatar || "",
         nickname: currentOptions.user?.nickname || "User",
