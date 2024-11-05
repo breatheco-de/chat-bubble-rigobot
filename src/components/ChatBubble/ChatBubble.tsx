@@ -111,7 +111,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
-    { text: welcomeMessage, sender: "user" },
     ...storedMessages,
   ]);
   const [inputValue, setInputValue] = useState("");
