@@ -315,8 +315,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   showBubble,
   purposeSlug,
   highlight,
+  toggleCollapsed,
 }) => {
-  const [isChatVisible, setIsChatVisible] = useState<boolean>(false);
+  const [isChatVisible, setIsChatVisible] = useState<boolean>(!collapsed);
   const backdropRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -328,7 +329,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   const bubbleStylesRef = useRef(bubbleStyles);
 
   const toggleChat = () => {
-    setIsChatVisible(!isChatVisible);
+    toggleCollapsed();
   };
 
   useEffect(() => {

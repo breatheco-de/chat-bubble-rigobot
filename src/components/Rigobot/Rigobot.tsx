@@ -46,6 +46,15 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   ${currentOptions.user?.context || ""}
   ---
   `;
+
+  const toggleCollapsed = () => {
+    setCurrentOptions({
+      ...currentOptions,
+      collapsed: !currentOptions.collapsed,
+    });
+  };
+
+  logger.debug("collapsed", currentOptions.collapsed);
   return (
     <ChatBubble
       user={{
@@ -74,6 +83,7 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
       completions={currentOptions.completions}
       showBubble={currentOptions.showBubble}
       highlight={currentOptions.highlight}
+      toggleCollapsed={toggleCollapsed}
     />
   );
 };

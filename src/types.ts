@@ -44,6 +44,7 @@ export interface ChatBubbleProps {
   showBubble?: boolean;
   purposeSlug?: string;
   highlight?: boolean;
+  toggleCollapsed: () => void;
 }
 
 export type TIntroVideo = {
