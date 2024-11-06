@@ -39,6 +39,7 @@ export const chatStyles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 1000,
   },
   onlineCircle: {
     width: "10px",
@@ -208,7 +209,8 @@ export const StyledMessage = styled.div<StyledMessageProps>`
     white-space: pre-wrap;
   }
 
-  & ul, & ol {
+  & ul,
+  & ol {
     padding-left: 25px !important;
   }
 
