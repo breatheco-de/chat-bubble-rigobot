@@ -63,7 +63,7 @@ export const chatStyles = {
   },
   messagesContainer: {
     padding: "16px",
-    paddingBottom: "300px",
+    paddingBottom: "100px",
     overflowY: "scroll",
     maxHeight: "500px",
     boxSizing: "border-box",
@@ -202,6 +202,14 @@ export const StyledMessage = styled.div<StyledMessageProps>`
   & p {
     word-break: break-word;
     margin: 0;
+  }
+
+  & pre {
+    white-space: pre-wrap;
+  }
+
+  & ul, & ol {
+    padding-left: 25px !important;
   }
 
   > div {

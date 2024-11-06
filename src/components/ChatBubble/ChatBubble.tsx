@@ -68,8 +68,8 @@ const ChatInput = ({
           width: "100%",
           borderRadius: "11px",
           border: `1px solid ${rootVariables.lightGrey}`,
-          color: "black",
-          background: "white",
+          color: "black !important",
+          background: "white !important",
           outline: `1px solid ${rootVariables.lightGrey}`,
         }}
       />
@@ -79,6 +79,27 @@ const ChatInput = ({
     </div>
   );
 };
+
+const example_CODE = `  
+  \`\`\`python
+  def greet(name):
+    print("Hello, " + name) asd asd asd asd asd asd asd asd
+  \`\`\`
+`;
+
+const exampleOrderedList = `
+1. First item
+2. Second item
+3. Third item
+
+`;
+
+const DEFAULT_EXAMPLE_MESSAGe = [
+  { text: example_CODE, sender: "ai" },
+  { text: "Some list in markdown\n- Item 1\n- Item 2", sender: "ai" },
+  { text: exampleOrderedList, sender: "ai" },
+  { text: "I'm good, thanks", sender: "person" },
+];
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   user,
@@ -111,6 +132,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
+    // ...DEFAULT_EXAMPLE_MESSAGe,
     ...storedMessages,
   ]);
   const [inputValue, setInputValue] = useState("");
