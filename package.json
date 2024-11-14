@@ -1,6 +1,6 @@
 {
   "name": "rigobot-chat-bubble",
-  "version": "0.0.53",
+  "version": "0.0.55",
   "type": "module",
   "files": [
     "dist",

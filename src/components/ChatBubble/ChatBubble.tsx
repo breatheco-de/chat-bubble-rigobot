@@ -80,26 +80,26 @@ const ChatInput = ({
   );
 };
 
-const example_CODE = `  
-  \`\`\`python
-  def greet(name):
-    print("Hello, " + name) asd asd asd asd asd asd asd asd
-  \`\`\`
-`;
+// const example_CODE = `  
+//   \`\`\`python
+//   def greet(name):
+//     print("Hello, " + name) asd asd asd asd asd asd asd asd
+//   \`\`\`
+// `;
 
-const exampleOrderedList = `
-1. First item
-2. Second item
-3. Third item
+// const exampleOrderedList = `
+// 1. First item
+// 2. Second item
+// 3. Third item
 
-`;
+// `;
 
-const DEFAULT_EXAMPLE_MESSAGe = [
-  { text: example_CODE, sender: "ai" },
-  { text: "Some list in markdown\n- Item 1\n- Item 2", sender: "ai" },
-  { text: exampleOrderedList, sender: "ai" },
-  { text: "I'm good, thanks", sender: "person" },
-];
+// const DEFAULT_EXAMPLE_MESSAGe = [
+//   { text: example_CODE, sender: "ai" },
+//   { text: "Some list in markdown\n- Item 1\n- Item 2", sender: "ai" },
+//   { text: exampleOrderedList, sender: "ai" },
+//   { text: "I'm good, thanks", sender: "person" },
+// ];
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   user,
