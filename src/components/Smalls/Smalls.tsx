@@ -4,7 +4,7 @@
 import { chatStyles, StyledMessage } from "../ChatBubble/ChatBubbleStyles";
 import { svgs } from "../../assets/svgs";
 import MarkdownRenderer from "../MarkdownRenderer/MarkdownRenderer";
-import gif from "../../assets/bubble.gif";
+const gifSources = "https://unpkg.com/rigobot-chat-bubble@0.0.50/src/assets/bubble.gif";
 export const RigoThumbnail = ({
   withOnline = false,
   onClick = () => {},
@@ -18,7 +18,7 @@ export const RigoThumbnail = ({
     // @ts-ignore
     <div onClick={onClick} style={chatStyles.thumbnail}>
       {moving ? (
-        <img style={{ maxWidth: "100%", height: "auto" }} src={gif} />
+        <img style={{ maxWidth: "100%", height: "auto" }} src={gifSources} />
       ) : (
         svgs.rigoSvg
       )}

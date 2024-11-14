@@ -204,14 +204,16 @@ export const StyledMessage = styled.div<StyledMessageProps>`
     word-break: break-word;
     margin: 0;
   }
+  & ol,
+  ul {
+    padding-left: 20px !important;
+  }
 
   & pre {
     white-space: pre-wrap;
   }
-
-  & ul,
-  & ol {
-    padding-left: 25px !important;
+  & li {
+    list-style-position: inside;
   }
 
   > div {

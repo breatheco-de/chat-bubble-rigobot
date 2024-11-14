@@ -185,12 +185,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     });
 
     socket.on("responseFinished", (data) => {
-      console.log(isTryingToMove, " IS TRYING TO MOVE");
-
       setIsTryingToMove(false);
       if (data.status === "ok") {
-        console.log(data);
-
         const response = data.ai_response;
         const result = extractMovetoContent(response);
         if (result.targetElement) {
@@ -198,6 +194,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
             `Moving chat to target element ${result.targetElement} as Rigobot requested `
           );
           setOriginElementBySelector(result.targetElement);
+        }
+        if (result.textWithoutTags) {
+          setMessages((prevMessages) => {
+            const updatedMessages = [...prevMessages];
+            const lastMessageIndex = updatedMessages.length - 1;
+            updatedMessages[lastMessageIndex].text = result.textWithoutTags;
+            return updatedMessages;
+          });
         }
       }
     });
