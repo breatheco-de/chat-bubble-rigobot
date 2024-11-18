@@ -68,8 +68,8 @@ const ChatInput = ({
           width: "100%",
           borderRadius: "11px",
           border: `1px solid ${rootVariables.lightGrey}`,
-          color: "black !important",
-          background: "white !important",
+          color: "#000000",
+          background: "white",
           outline: `1px solid ${rootVariables.lightGrey}`,
         }}
       />
