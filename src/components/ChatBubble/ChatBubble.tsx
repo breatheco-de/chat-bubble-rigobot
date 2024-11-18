@@ -80,7 +80,7 @@ const ChatInput = ({
   );
 };
 
-// const example_CODE = `  
+// const example_CODE = `
 //   \`\`\`python
 //   def greet(name):
 //     print("Hello, " + name) asd asd asd asd asd asd asd asd
@@ -343,7 +343,6 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   highlight,
   toggleCollapsed,
 }) => {
-  const [isChatVisible, setIsChatVisible] = useState<boolean>(!collapsed);
   const backdropRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -359,11 +358,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   };
 
   useEffect(() => {
-    setIsChatVisible(!collapsed);
-  }, [collapsed]);
-
-  useEffect(() => {
-    if (isChatVisible && containerRef.current) {
+    if (!collapsed && containerRef.current) {
       if (!chatContainerRef.current) return;
 
       const rect = chatContainerRef.current.getBoundingClientRect();
@@ -387,13 +382,13 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         chatContainerRef.current.style.top = "80px";
       }
     }
-  }, [isChatVisible]);
+  }, [collapsed]);
 
   useEffect(() => {
     bubbleStylesRef.current = bubbleStyles;
-    setIsChatVisible(false);
+    toggleCollapsed();
     setTimeout(() => {
-      setIsChatVisible(!collapsed);
+      toggleCollapsed();
     }, 100);
   }, [bubbleStyles]);
 
@@ -471,7 +466,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               )}
             </>
           )}
-          {isChatVisible && (
+          {!collapsed && (
             <ChatContainerStyled ref={chatContainerRef}>
               <ChatMessages
                 user={user}

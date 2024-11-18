@@ -54,7 +54,10 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
     });
   };
 
-  logger.debug("collapsed", currentOptions.collapsed);
+  logger.debug(
+    "Collapsed initializing Rigobot bubble",
+    currentOptions.collapsed
+  );
   return (
     <ChatBubble
       user={{
