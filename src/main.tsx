@@ -45,7 +45,7 @@ window.rigo = {
         ...this.options,
         ...showOpts,
         collapsed:
-          typeof showOpts.collapsed === "boolean" ? showOpts.collapsed : false,
+          typeof showOpts.collapsed === "boolean" ? showOpts.collapsed : true,
       };
 
       this.options = options;
