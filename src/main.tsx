@@ -45,10 +45,12 @@ window.rigo = {
         ...this.options,
         ...showOpts,
         collapsed:
-          typeof showOpts.collapsed === "boolean" ? showOpts.collapsed : true,
+          typeof showOpts.collapsed === "boolean" ? showOpts.collapsed : false,
       };
 
       this.options = options;
+
+      console.log("Options to init Rigo: ", options);
 
       logger.debug(`Options to init Rigo: ${options}`);
 

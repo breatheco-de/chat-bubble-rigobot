@@ -358,6 +358,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   };
 
   useEffect(() => {
+    console.error("Collapsed state changed", collapsed);
+
     if (!collapsed && containerRef.current) {
       if (!chatContainerRef.current) return;
 
@@ -384,13 +386,13 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     }
   }, [collapsed]);
 
-  useEffect(() => {
-    bubbleStylesRef.current = bubbleStyles;
-    toggleCollapsed();
-    setTimeout(() => {
-      toggleCollapsed();
-    }, 100);
-  }, [bubbleStyles]);
+  // useEffect(() => {
+  //   bubbleStylesRef.current = bubbleStyles;
+  //   // toggleCollapsed({ enforce: true });
+  //   setTimeout(() => {
+  //     // toggleCollapsed({ enforce: false });
+  //   }, 100);
+  // }, [bubbleStyles]);
 
   useEffect(() => {
     setBubbleStyles(

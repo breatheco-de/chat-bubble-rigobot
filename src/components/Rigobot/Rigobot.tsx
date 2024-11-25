@@ -48,6 +48,8 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   `;
 
   const toggleCollapsed = () => {
+    console.log("Toggling collapsed");
+    
     setCurrentOptions({
       ...currentOptions,
       collapsed: !currentOptions.collapsed,
@@ -58,6 +60,8 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
     "Collapsed initializing Rigobot bubble",
     currentOptions.collapsed
   );
+  console.log("Collapsed state", currentOptions.collapsed);
+  
   return (
     <ChatBubble
       user={{
@@ -80,7 +84,11 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
           : "4geeks-academy-salesman"
       }
       chatAgentHash={chatAgentHash}
-      collapsed={Boolean(currentOptions?.collapsed)}
+      collapsed={
+        typeof currentOptions?.collapsed === "boolean"
+          ? currentOptions?.collapsed
+          : false
+      }
       originElement={originElement}
       introVideo={currentOptions.introVideo}
       completions={currentOptions.completions}
