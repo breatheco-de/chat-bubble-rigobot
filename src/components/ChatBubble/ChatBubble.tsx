@@ -195,14 +195,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           );
           setOriginElementBySelector(result.targetElement);
         }
-        if (result.textWithoutTags) {
-          setMessages((prevMessages) => {
-            const updatedMessages = [...prevMessages];
-            const lastMessageIndex = updatedMessages.length - 1;
-            updatedMessages[lastMessageIndex].text = result.textWithoutTags;
-            return updatedMessages;
-          });
-        }
+        console.log(result, "RESULT AFTER EXTRACTING MOVETO TAGS");
+
+        setMessages((prevMessages) => {
+          const updatedMessages = [...prevMessages];
+          const lastMessageIndex = updatedMessages.length - 1;
+          updatedMessages[lastMessageIndex].text = result.textWithoutTags;
+          return updatedMessages;
+        });
       }
     });
     return () => {

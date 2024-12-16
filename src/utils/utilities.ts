@@ -15,6 +15,11 @@ export function extractMovetoContent(text: string): {
     textWithoutTags = text.replace(movetoRegex, "");
   }
 
+  // If the moveto is empty, replace it also
+  if (targetElement === null) {
+    textWithoutTags = text.replace(/<moveto>.*?<\/moveto>/g, "");
+  }
+
   return { targetElement, textWithoutTags };
 }
 
