@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { chatStyles, StyledMessage } from "../ChatBubble/ChatBubbleStyles";
+import {
+  chatStyles,
+  rootVariables,
+  StyledMessage,
+} from "../ChatBubble/ChatBubbleStyles";
 import { svgs } from "../../assets/svgs";
 import MarkdownRenderer from "../MarkdownRenderer/MarkdownRenderer";
-const gifSources = "https://unpkg.com/rigobot-chat-bubble@0.0.50/src/assets/bubble.gif";
+
+const gifSources =
+  "https://unpkg.com/rigobot-chat-bubble@0.0.50/src/assets/bubble.gif";
+
 export const RigoThumbnail = ({
   withOnline = false,
   onClick = () => {},
@@ -14,11 +21,15 @@ export const RigoThumbnail = ({
   onClick?: () => void;
   moving?: boolean;
 }) => {
+  const styles = {
+    ...chatStyles.thumbnail,
+    background: moving ? "transparent" : rootVariables.activeColor,
+  };
   return (
     // @ts-ignore
-    <div onClick={onClick} style={chatStyles.thumbnail}>
+    <div onClick={onClick} style={styles}>
       {moving ? (
-        <img style={{ maxWidth: "100%", height: "auto" }} src={gifSources} />
+        <img style={{ maxWidth: "70px", height: "auto" }} src={gifSources} />
       ) : (
         svgs.rigoSvg
       )}

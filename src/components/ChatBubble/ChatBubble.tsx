@@ -451,6 +451,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
             <>
               <RigoThumbnail
                 moving={originElementState ? true : false}
+                // moving={true}
                 onClick={toggleChat}
               />
               <div style={{ position: "relative" }}>

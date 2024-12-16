@@ -60,7 +60,7 @@ export const chatStyles = {
     justifyContent: "center",
     alignItems: "center",
     cursor: "pointer",
-    background: rootVariables.activeColor,
+    
   },
   messagesContainer: {
     padding: "16px",
