@@ -22,7 +22,6 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   }, []);
 
   useEffect(() => {
-    // Update isCollapsed and originElement whenever currentOptions change
     if (currentOptions.target) {
       const element = document.querySelector(currentOptions.target);
       // @ts-ignore
@@ -32,9 +31,6 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
       setOriginElement(null);
     }
   }, [currentOptions]);
-
-  logger.debug("Starting Rigobot with the following options");
-  logger.debug(currentOptions);
 
   const completeContext = `
   <page_context info="This context indicates information about the current website in which you are working on.">
@@ -47,12 +43,18 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
 
   const toggleCollapsed = () => {
     console.log(
-      `Toggling collapsed state, current: ${currentOptions.collapsed}`
+      `Toggling collapsed state, current: ${
+        currentOptions.collapsed
+      }, next: ${!currentOptions.collapsed}`
     );
     setCurrentOptions({
       ...currentOptions,
       collapsed: !currentOptions.collapsed,
     });
+    window.rigo.options = {
+      ...window.rigo.options,
+      collapsed: !currentOptions.collapsed,
+    };
   };
 
   return (
@@ -61,7 +63,7 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
         context: completeContext,
         token: currentOptions.user?.token || "",
         avatar: currentOptions.user?.avatar || "",
-        nickname: currentOptions.user?.nickname || "User", 
+        nickname: currentOptions.user?.nickname || "User",
       }}
       socketHost={currentOptions.socketHost || "https://ai.4geeks.com"}
       welcomeMessage={
