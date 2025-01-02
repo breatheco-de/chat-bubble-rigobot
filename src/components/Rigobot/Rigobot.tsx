@@ -37,38 +37,31 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   logger.debug(currentOptions);
 
   const completeContext = `
-  ALL THIS CONTEXT IS IMPORTART FOR YOUR TASK
-  ---page context---
+  <page_context info="This context indicates information about the current website in which you are working on.">
   ${currentOptions.context}
-  ---
-
-  ---user context---
+  </page_context>
+  <user_context info="This context indicates information about the user that is interacting with you if available.">
   ${currentOptions.user?.context || ""}
-  ---
+  </user_context>
   `;
 
   const toggleCollapsed = () => {
-    console.log("Toggling collapsed");
-    
+    console.log(
+      `Toggling collapsed state, current: ${currentOptions.collapsed}`
+    );
     setCurrentOptions({
       ...currentOptions,
       collapsed: !currentOptions.collapsed,
     });
   };
 
-  logger.debug(
-    "Collapsed initializing Rigobot bubble",
-    currentOptions.collapsed
-  );
-  console.log("Collapsed state", currentOptions.collapsed);
-  
   return (
     <ChatBubble
       user={{
         context: completeContext,
         token: currentOptions.user?.token || "",
         avatar: currentOptions.user?.avatar || "",
-        nickname: currentOptions.user?.nickname || "User",
+        nickname: currentOptions.user?.nickname || "User", 
       }}
       socketHost={currentOptions.socketHost || "https://ai.4geeks.com"}
       welcomeMessage={

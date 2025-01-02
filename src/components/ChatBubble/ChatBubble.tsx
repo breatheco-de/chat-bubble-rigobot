@@ -353,13 +353,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   );
   const bubbleStylesRef = useRef(bubbleStyles);
 
-  const toggleChat = () => {
-    toggleCollapsed();
-  };
-
   useEffect(() => {
-    console.error("Collapsed state changed", collapsed);
-
     if (!collapsed && containerRef.current) {
       if (!chatContainerRef.current) return;
 
@@ -452,7 +446,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               <RigoThumbnail
                 moving={originElementState ? true : false}
                 // moving={true}
-                onClick={toggleChat}
+                onClick={toggleCollapsed}
               />
               <div style={{ position: "relative" }}>
                 <RadarElement
@@ -462,7 +456,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               </div>
               {Boolean(highlight) && (
                 <PalpitatingBubble
-                  onClick={toggleChat}
+                  onClick={toggleCollapsed}
                   width="50px"
                   height="50px"
                 />
@@ -478,7 +472,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                 purposeSlug={purposeSlug}
                 chatAgentHash={chatAgentHash}
                 socketHost={socketHost}
-                closeChat={toggleChat}
+                closeChat={toggleCollapsed}
                 welcomeMessage={welcomeMessage}
                 completions={completions}
                 backdropRef={backdropRef}

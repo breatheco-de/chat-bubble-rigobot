@@ -39,7 +39,6 @@ window.rigo = {
     this.token = token;
   },
   show: function (showOpts) {
-    logger.info("Showing Rigobot");
     if (this.container) {
       const options = {
         ...this.options,
@@ -50,9 +49,7 @@ window.rigo = {
 
       this.options = options;
 
-      console.log("Options to init Rigo: ", options);
-
-      logger.debug(`Options to init Rigo: ${options}`);
+      console.log("Initializing Rigobot with options: ", options);
 
       if (!this.root) {
         this.root = ReactDOMClient.createRoot(this.container);
@@ -82,6 +79,12 @@ window.rigo = {
 
   updateOptions: function (newOptions: Options) {
     logger.debug("Updating options for Rigobot");
+    console.log(`Previous collapsed state: ${this.options?.collapsed}`);
+    console.log(`Incoming collapsed state: ${newOptions.collapsed}`);
+    if (newOptions.collapsed === undefined) {
+      newOptions.collapsed = this.options?.collapsed;
+    }
+    
     this.options = { ...this.options, ...newOptions };
     logger.info("Options updated to: ", this.options);
 
