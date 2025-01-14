@@ -53,14 +53,13 @@ export const chatStyles = {
   },
   thumbnail: {
     position: "relative",
-    border: "2px solid white",
+    border: "none",
     borderRadius: "50vh",
     padding: "4px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     cursor: "pointer",
-    
   },
   messagesContainer: {
     padding: "16px",
@@ -219,6 +218,7 @@ export const StyledMessage = styled.div<StyledMessageProps>`
   > div {
     padding: 10px;
     border-radius: 5px;
+
     ${(props) =>
       props.sender === "ai"
         ? `
