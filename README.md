@@ -67,7 +67,7 @@ Include the following script in your HTML file:
 
 4. **Update options**
 
-   You can update the context of the chat bubble using the `updateOptions` method. This can be useful if you want to change the context dynamically based on user interactions.
+   You can update the context of the chat bubble using the `updateOptions` method passing any of the keys available in the [Options interface](https://github.com/breatheco-de/chat-bubble-rigobot/blob/80439116dc1884ec92e44dc504af3e22da0f6429/src/types.ts#L56). This can be useful if you want to change the context dynamically based on user interactions.
 
    ```javascript
    window.rigo.updateOptions({
