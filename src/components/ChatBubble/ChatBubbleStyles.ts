@@ -319,3 +319,24 @@ export const ChatContainerStyled = styled.div`
   bottom: 60px;
   z-index: 1000;
 `;
+
+export const StyledMarkdown = styled.div`
+  max-width: 100%;
+  overflow-x: auto;
+
+  & a {
+    color: ${rootVariables.activeColor};
+    text-decoration: underline;
+    font-weight: bold;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  & code:not([class*="language-"]) {
+    background: ${rootVariables.backgroundGreyLight};
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+`;

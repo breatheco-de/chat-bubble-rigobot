@@ -1,4 +1,3 @@
-import MarkdownIt from "markdown-it";
 
 export function extractMovetoContent(text: string): {
   targetElement: string | null;
@@ -53,10 +52,6 @@ export const logger = {
   },
 };
 
-export function convertMarkdownToHTML(markdownText: string) {
-  const md = new MarkdownIt();
-  return md.render(markdownText);
-}
 
 export const createContext = (
   userContext: string,

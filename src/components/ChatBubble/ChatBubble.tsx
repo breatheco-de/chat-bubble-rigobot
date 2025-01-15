@@ -1,5 +1,4 @@
 import "@fontsource/lato";
-import "highlight.js/styles/github.css";
 
 import React, { useState, useEffect, useRef } from "react";
 
@@ -31,6 +30,7 @@ type TChatInputProps = {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyUp: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onSubmit: () => void;
+  placeholder: string;
 };
 
 const ChatInput = ({
@@ -38,6 +38,7 @@ const ChatInput = ({
   onInputChange,
   onKeyUp,
   onSubmit,
+  placeholder,
 }: TChatInputProps) => {
   return (
     <div
@@ -58,7 +59,7 @@ const ChatInput = ({
     >
       <input
         type="text"
-        placeholder="Ask Rigobot..."
+        placeholder={placeholder}
         value={inputValue}
         // onChange={(e) => setInputValue(e.target.value)}
         onChange={onInputChange}
@@ -80,26 +81,25 @@ const ChatInput = ({
   );
 };
 
-// const example_CODE = `
-//   \`\`\`python
-//   def greet(name):
-//     print("Hello, " + name) asd asd asd asd asd asd asd asd
-//   \`\`\`
-// `;
+const example_CODE = `
+  \`\`\`python
+  def greet(name):
+    print("Hello, " + name) asd asd asd asd asd asd asd asd
+  \`\`\`
+`;
 
-// const exampleOrderedList = `
-// 1. First item
-// 2. Second item
-// 3. Third item
+const exampleOrderedList = `
+1. **First item**: With information abut the first item
+2. **Second item**: With information abut the second item
+3. **Third item**: With information abut the third item
 
-// `;
+`;
 
-// const DEFAULT_EXAMPLE_MESSAGe = [
-//   { text: example_CODE, sender: "ai" },
-//   { text: "Some list in markdown\n- Item 1\n- Item 2", sender: "ai" },
-//   { text: exampleOrderedList, sender: "ai" },
-//   { text: "I'm good, thanks", sender: "person" },
-// ];
+const DEFAULT_EXAMPLE_MESSAGe = [
+  { text: example_CODE, sender: "ai" },
+  { text: exampleOrderedList, sender: "ai" },
+  { text: "I'm good, thanks", sender: "person" },
+];
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   user,
@@ -132,12 +132,13 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
-    // ...DEFAULT_EXAMPLE_MESSAGe,
+    ...DEFAULT_EXAMPLE_MESSAGe,
     ...storedMessages,
   ]);
   const [inputValue, setInputValue] = useState("");
 
   const [isTryingToMove, setIsTryingToMove] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -185,6 +186,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     });
 
     socket.on("responseFinished", (data) => {
+      setIsLoading(false);
       setIsTryingToMove(false);
       if (data.status === "ok") {
         const response = data.ai_response;
@@ -195,7 +197,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           );
           setOriginElementBySelector(result.targetElement);
         }
-        console.log(result, "RESULT AFTER EXTRACTING MOVETO TAGS");
 
         setMessages((prevMessages) => {
           const updatedMessages = [...prevMessages];
@@ -263,6 +264,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       setStoredMessages(newMessages);
 
       setInputValue("");
+      setIsLoading(true);
     }
   };
 
@@ -318,6 +320,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         ))}
       </div>
       <ChatInput
+        placeholder={isLoading ? "Thinking..." : "Ask Rigobot..."}
         inputValue={inputValue}
         onKeyUp={handleKeyUp}
         onSubmit={handleSendMessage}

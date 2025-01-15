@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import MarkdownIt from "markdown-it";
 import hljs from "highlight.js";
-
-const md = new MarkdownIt();
+import "highlight.js/styles/atom-one-dark.css";
+import Markdown from "react-markdown";
+import { StyledMarkdown } from "../ChatBubble/ChatBubbleStyles";
 
 const MarkdownRenderer = ({ markdown }: { markdown: string }) => {
   useEffect(() => {
@@ -11,16 +11,20 @@ const MarkdownRenderer = ({ markdown }: { markdown: string }) => {
     });
   }, [markdown]);
 
-  const getMarkdownText = () => {
-    const rawMarkup = md.render(markdown);
-    return { __html: rawMarkup };
-  };
-
   return (
-    <div
-      style={{ maxWidth: "100%" }}
-      dangerouslySetInnerHTML={getMarkdownText()}
-    />
+    <StyledMarkdown>
+      <Markdown
+        components={{
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noopener noreferrer">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {markdown}
+      </Markdown>
+    </StyledMarkdown>
   );
 };
 
