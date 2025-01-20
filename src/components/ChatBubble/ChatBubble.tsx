@@ -132,10 +132,13 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   const [messages, setMessages] = useState([
     { text: welcomeMessage, sender: "ai" },
-    ...DEFAULT_EXAMPLE_MESSAGe,
+    // ...DEFAULT_EXAMPLE_MESSAGe,
     ...storedMessages,
   ]);
   const [inputValue, setInputValue] = useState("");
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const scrollPosition = useRef(0);
+  const [autoScroll, setAutoScroll] = useState(true);
 
   const [isTryingToMove, setIsTryingToMove] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -202,6 +205,21 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           const updatedMessages = [...prevMessages];
           const lastMessageIndex = updatedMessages.length - 1;
           updatedMessages[lastMessageIndex].text = result.textWithoutTags;
+
+          if (window.rigo.callbacks["incoming_message"]) {
+            try {
+              window.rigo.callbacks["incoming_message"]({
+                incoming_message: data.ai_response,
+                conversation: {
+                  id: conversationId,
+                  purpose: purposeSlug,
+                },
+                messages: prevMessages,
+              });
+            } catch (error) {
+              logger.error("Error calling incoming_message callback", error);
+            }
+          }
           return updatedMessages;
         });
       }
@@ -211,6 +229,13 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       socket.off("responseFinished");
     };
   }, [isTryingToMove, socket, conversationId]);
+
+  useEffect(() => {
+    if (!messagesContainerRef.current || !autoScroll) return;
+    messagesContainerRef.current.scrollTop =
+      messagesContainerRef.current.scrollHeight;
+    // scrollPosition.current = messagesRef.current.scrollTop || 0;
+  }, [messages, autoScroll]);
 
   useEffect(() => {
     initialize();
@@ -235,15 +260,17 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   const handleSendMessage = () => {
     if (inputValue.trim() && socket) {
+      const completeContext = createContext(
+        user.context,
+        JSON.stringify(completions),
+        messages.map((m) => `${m.sender}: ${m.text}`).join("\n")
+      );
+
       const messageData = {
         message: {
           type: "user",
           text: inputValue,
-          context: createContext(
-            user.context,
-            JSON.stringify(completions),
-            messages.map((m) => `${m.sender}: ${m.text}`).join("\n")
-          ),
+          context: completeContext,
         },
         conversation: {
           id: conversationId,
@@ -265,6 +292,19 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
       setInputValue("");
       setIsLoading(true);
+      setAutoScroll(true);
+
+      if (window.rigo.callbacks["outgoing_message"]) {
+        window.rigo.callbacks["outgoing_message"]({
+          outgoing_message: inputValue,
+          conversation: {
+            id: conversationId,
+            purpose: purposeSlug,
+          },
+          messages: messages,
+          context: completeContext,
+        });
+      }
     }
   };
 
@@ -276,6 +316,23 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
+  };
+
+  const handleScroll = () => {
+    if (
+      messagesContainerRef.current?.scrollTop &&
+      messagesContainerRef.current?.scrollTop < scrollPosition.current
+    ) {
+      setAutoScroll(false);
+    } else if (
+      messagesContainerRef.current?.scrollTop &&
+      messagesContainerRef.current?.scrollTop > scrollPosition.current
+    ) {
+      scrollPosition.current = messagesContainerRef.current?.scrollTop || 0;
+      if (!autoScroll) {
+        setAutoScroll(true);
+      }
+    }
   };
 
   return (
@@ -313,8 +370,12 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         </section>
       </div>
       {introVideo && <VideoDisplay inner={true} video={introVideo} />}
-      {/* @ts-ignore */}
-      <div style={chatStyles.messagesContainer}>
+      <div
+        onScroll={handleScroll}
+        ref={messagesContainerRef}
+        // @ts-ignore
+        style={chatStyles.messagesContainer}
+      >
         {messages.map((message, index) => (
           <Message user={user} message={message} key={index} />
         ))}

@@ -42,11 +42,6 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   `;
 
   const toggleCollapsed = () => {
-    console.log(
-      `Toggling collapsed state, current: ${
-        currentOptions.collapsed
-      }, next: ${!currentOptions.collapsed}`
-    );
     setCurrentOptions({
       ...currentOptions,
       collapsed: !currentOptions.collapsed,
@@ -55,6 +50,13 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
       ...window.rigo.options,
       collapsed: !currentOptions.collapsed,
     };
+
+    if (window.rigo.callbacks["open_bubble"] && currentOptions.collapsed) {
+      window.rigo.callbacks["open_bubble"]({});
+    }
+    if (window.rigo.callbacks["close_bubble"] && !currentOptions.collapsed) {
+      window.rigo.callbacks["close_bubble"]({});
+    }
   };
 
   return (

@@ -9,7 +9,10 @@
   <body style="height: 300vh">
     <h1 id="chat-grow">s</h1>
     <button onclick="moveRigo()">Move RIgo</button>
-    <div style="position: absolute; top: 3000px; right: 50%" id="bottom-element">
+    <div
+      style="position: absolute; top: 3000px; right: 50%"
+      id="bottom-element"
+    >
       asdasd
     </div>
     <div
@@ -33,7 +36,7 @@
           null,
           ".centered-element",
           "some-non-existing-element",
-          "#bottom-element"
+          "#bottom-element",
         ];
 
         const randomIndex = Math.floor(Math.random() * possibilities.length);
@@ -52,9 +55,9 @@
       document.addEventListener("DOMContentLoaded", function () {
         if (window.rigo) {
           // window.rigo.init("248b53865d6743519ef55b4ec65772a7", {
-          window.rigo.init("0839749d0baa4a51ac165d40b98f95f3", {
+          window.rigo.init("4ce70b0f716543c3a97a9078e79ba785", {
             loglevel: "debug",
-            purposeSlug: "chayito",
+            purposeSlug: "4geekscom-public-agent",
             completions: [
               {
                 prompt: "What is the name of the Data Science main director?",
@@ -77,6 +80,22 @@
             showBubble: true,
             collapsed: false,
             highlight: true,
+          });
+
+          window.rigo.on("open_bubble", (data) => {
+            console.log("open_bubble", data);
+          });
+
+          window.rigo.on("incoming_message", (data) => {
+            console.log("incoming_message", data);
+          });
+
+          window.rigo.on("outgoing_message", (data) => {
+            console.log("outgoing_message", data);
+          });
+
+          window.rigo.on("close_bubble", (data) => {
+            console.log("close_bubble", data);
           });
 
           // window.rigo.hide();

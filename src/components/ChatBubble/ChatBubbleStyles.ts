@@ -339,4 +339,9 @@ export const StyledMarkdown = styled.div`
     padding: 2px 4px;
     border-radius: 4px;
   }
+
+  & pre {
+  
+    scrollbar-width: none;
+  }
 `;

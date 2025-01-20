@@ -170,13 +170,22 @@ Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
 }
 ```
 
-### Methods
+### Events
+
+- `open_bubble`: Triggered when the bubble is opened.
+- `close_bubble`: Triggered when the bubble is closed.
+- `outgoing_message`: Triggered when the user sends a message to the bot.
+- `incoming_message`: Triggered when the bot finish processing the user message.
+
+### Methods and properties
 
 - `init(token: string, options?: Options)`: Initializes the chat bubble with the given token and options.
 - `show(Options)`: Displays the chat bubble with the specified options.
 - `hide()`: Hides the chat bubble.
+- `on(event: string, callback: (data: any) => void)`: Adds a callback function for a specific events.
 - `updateOptions(Options)`: Updates the options without triggering a new render of the chat bubble.
-- `
+- `options`: The current options of the chat bubble.
+- `callbacks`: The current callbacks of the chat bubble.
 
 ## License
 

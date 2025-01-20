@@ -9,7 +9,14 @@ interface Rigo {
   init: (token: string, options?: Options) => void;
   show: (params: Options) => void;
   hide: () => void;
+  on: (event: string, callback: (data: any) => void) => void;
   updateOptions: (newOptions: Options) => void;
+  callbacks: {
+    [key: string]: (data: any) => void;
+  };
+  // callbackDescriptions: {
+  //   [key: string]: string;
+  // };
   container?: HTMLElement;
   options?: Options;
   token?: string;
@@ -76,6 +83,18 @@ window.rigo = {
       logger.debug("Impossible to hide, a React root was not found!");
     }
   },
+  on: function (event: string, callback: (data: any) => void) {
+    this.callbacks[event] = callback;
+  },
+  callbacks: {},
+  // callbackDescriptions: {
+  //   open_bubble: "This callback is triggered when the bubble is opened.",
+  //   close_bubble: "This callback is triggered when the bubble is closed.",
+  //   outgoing_message:
+  //     "This callback is triggered when the user sends a message to the bot.",
+  //   incoming_message:
+  //     "This callback is triggered when the bot finish processing the user message.",
+  // },
 
   updateOptions: function (newOptions: Options) {
     logger.debug("Updating options for Rigobot");
@@ -84,7 +103,7 @@ window.rigo = {
     if (newOptions.collapsed === undefined) {
       newOptions.collapsed = this.options?.collapsed;
     }
-    
+
     this.options = { ...this.options, ...newOptions };
     logger.info("Options updated to: ", this.options);
 
