@@ -1,192 +1,242 @@
 # Rigobot Chat Bubble
 
-> Note: To use this library you must have a [Rigobot acoount](https://ai.4geeks.com/)
+Rigobot Chat Bubble is a lightweight and customizable chat interface that seamlessly integrates into any website. It allows users to interact with an AI-powered chat agent in real-time, providing a personalized and dynamic user experience.
 
-Rigobot Chat Bubble is a customizable chat interface that can be easily integrated into any website. It allows users to interact with a chat agent and receive responses in real-time.
+---
 
-## Getting Started
+## 🚀 Getting Started
 
-To use Rigobot Chat Bubble, you need to include the script in your HTML file and initialize the chat bubble with the required options.
+To begin using Rigobot Chat Bubble, simply include the script in your HTML file, initialize it with your configurations, and start interacting with your users through the chat interface.
 
-### Installation
+---
 
-Include the following script in your HTML file:
+## 📦 Installation
+
+Add the following script to your HTML file to include Rigobot Chat Bubble:
 
 ```html
-<script src="https://unpkg.com/rigobot-chat-bubble@0.0.13/dist/main.js"></script>
+<script src="https://unpkg.com/rigobot-chat-bubble@0.0.68/dist/main.js"></script>
 ```
 
-### Usage
+---
 
-1. **Initialize the Chat Bubble**
+## 🛠️ Usage
 
-   You need to initialize the chat bubble with a token and optional settings. This can be done using the `init` method.
+### 1️⃣ Initializing the Chat Bubble
 
-   ```javascript
-   window.rigo.init("YOUR_CHAT_AGENT_HASH", {
-     completions: [
-       {
-         prompt: "What is the name of the Data Science main director?",
-         answer: "The Data Science main director is Jenniffer Guzman",
-         DOMTarget: "#chat-grow",
-       },
-     ],
-     context: "The user is called: Lulú",
-     introVideoUrl: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
-   });
-   ```
+To initialize the chat bubble, use the `init` method with your **token** and optional settings.
 
-2. **Show the Chat Bubble**
+```javascript
+window.rigo.init("YOUR_CHAT_AGENT_HASH", {
+  completions: [
+    {
+      prompt: "What is the name of the Data Science main director?",
+      answer: "The Data Science main director is Jenniffer Guzman",
+      DOMTarget: "#chat-grow",
+    },
+  ],
+  context: "The user is called: Lulú",
+  introVideoUrl: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
+});
+```
 
-   To display the chat bubble, use the `show` method. You can specify various options such as `showBubble`, `target`, `bubblePosition`, `collapsed`, and `welcomeMessage`.
+---
 
-   ```javascript
-   window.rigo.show({
-     showBubble: true,
-     target: "#chat-grow",
-     bubblePosition: {
-       top: "10px",
-       left: "10px",
-     },
-     collapsed: false,
-     welcomeMessage: "I love punk",
-     (user: { // This property is optional, use it only if the user is authenticated
-         token: "some user token ",
-         nickname: "user nickname"
-       }),
-   });
-   ```
+### 2️⃣ Displaying the Chat Bubble
 
-3. **Hide the Chat Bubble**
+Use the `show` method to display the chat bubble. You can customize its position, visibility, and additional settings.
 
-   To hide the chat bubble, use the `hide` method.
+```javascript
+window.rigo.show({
+  showBubble: true,
+  target: "#chat-grow",
+  bubblePosition: {
+    top: "10px",
+    left: "10px",
+  },
+  collapsed: false,
+  welcomeMessage: "Hello! How can I help you today?",
+  user: {
+    token: "user-session-token", // Optional, for authenticated users
+    nickname: "Lulú",
+  },
+});
+```
 
-   ```javascript
-   window.rigo.hide();
-   ```
+---
 
-4. **Update options**
+### 3️⃣ Hiding the Chat Bubble
 
-   You can update the context of the chat bubble using the `updateOptions` method passing any of the keys available in the [Options interface](https://github.com/breatheco-de/chat-bubble-rigobot/blob/80439116dc1884ec92e44dc504af3e22da0f6429/src/types.ts#L56). This can be useful if you want to change the context dynamically based on user interactions.
+To hide the chat bubble, use the `hide` method:
 
-   ```javascript
-   window.rigo.updateOptions({
-     target: "#some-selecter", // The selector of the element you want the Rigobot bubble to move to
-   });
-   ```
+```javascript
+window.rigo.hide();
+```
 
-### Example
+---
 
-Here is a complete example of how to use Rigobot Chat Bubble in your HTML file:
+### 4️⃣ Dynamically Updating Options
+
+You can update the chat bubble's configuration dynamically using the `updateOptions` method:
+
+```javascript
+window.rigo.updateOptions({
+  context: "The user is now focused on Product XYZ",
+  target: "#new-target-element",
+});
+```
+
+---
+
+### 5️⃣ Listening to Events
+
+Rigobot emits various events that you can listen to and respond to. Use the `on` method to attach event listeners.
+
+#### Available Events and Their example Data:
+
+- **`open_bubble`**: Triggered when the bubble is opened.
+
+  ```javascript
+  {
+    when: "2025-01-22T14:00:00Z",
+    url: "https://yourwebsite.com",
+  }
+  ```
+
+- **`close_bubble`**: Triggered when the bubble is closed.
+
+  ```javascript
+  {
+    when: "2025-01-22T15:00:00Z",
+    url: "https://yourwebsite.com",
+  }
+  ```
+
+- **`outgoing_message`**: Triggered when the user sends a message to the bot.
+
+  ```javascript
+  {
+    text: "What is your pricing?",
+    conversation: { id: "12345", purpose: "sales" },
+    messages: [
+      { sender: "user", text: "What is your pricing?" },
+      { sender: "ai", text: "Our pricing starts at $50/month." },
+    ],
+    context: "The context sent to the AI",
+    when: "2025-01-22T15:03:00Z",
+    url: "https://yourwebsite.com",
+  }
+  ```
+
+- **`incoming_message`**: Triggered when the bot sends a response to the user.
+  ```javascript
+  {
+    text: "Our pricing starts at $50/month.",
+    conversation: { id: "12345", purpose: "sales" },
+    messages: [
+      { sender: "user", text: "What is your pricing?" },
+      { sender: "bot", text: "Our pricing starts at $50/month." },
+    ],
+    when: "2025-01-22T15:03:05Z",
+    url: "https://yourwebsite.com",
+  }
+  ```
+
+#### Example of Event Listening:
+
+```javascript
+window.rigo.on("open_bubble", (data) => {
+  console.log("Bubble opened:", data);
+});
+
+window.rigo.on("incoming_message", (data) => {
+  console.log("Bot response received:", data);
+});
+```
+
+---
+
+## 🌟 Example Implementation
+
+Below is a complete example of how to integrate Rigobot Chat Bubble into your webpage:
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rigobot Bubble</title>
-    <script src="https://unpkg.com/rigobot-chat-bubble@0.0.31/dist/main.js"></script>
+    <title>Rigobot Chat Bubble</title>
+    <script src="https://unpkg.com/rigobot-chat-bubble@0.0.13/dist/main.js"></script>
   </head>
-  <body style="height: 300vh">
-    <h1 id="chat-grow">s</h1>
-    <div style="position: absolute; top: 50%; right: 0" id="bottom-element">
-      asdasd
-    </div>
-    <div
-      style="position: absolute; top: 50%; right: 50%"
-      class="centered-element"
-    >
-      centered element
-    </div>
-    <div
-      style="position: absolute; bottom: 0%; right: 50%"
-      class="bottom-left-element"
-    >
-      bottom left element
-    </div>
+  <body>
+    <div id="chat-grow"></div>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        if (window.rigo) {
-          window.rigo.init("0839749d0baa4a51ac165d40b98f95f3", {
-            loglevel: "debug",
-            purposeSlug: "chayito",
-            completions: [
-              {
-                prompt: "What is the name of the Data Science main director?",
-                answer: "The Data Science main director is Jenniffer Guzman",
-                DOMTarget: "#chat-grow",
-              },
-            ],
-
-            introVideo: {
-              url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
+        window.rigo.init("YOUR_CHAT_AGENT_HASH", {
+          loglevel: "info",
+          purposeSlug: "sales",
+          context: "The user is exploring the pricing page",
+          introVideo: {
+            url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
+          },
+          completions: [
+            {
+              prompt: "What are your pricing options?",
+              answer: "Our pricing starts at $50/month.",
+              DOMTarget: "#chat-grow",
             },
-            context: "The user is called: Lulú",
-            user: {
-              token: "some user token ",
-            },
-          });
+          ],
+        });
 
-          window.rigo.show({
-            // target: "#bottom-element",
-            showBubble: false, // To keep the bubble hidden until you want to show it
-            collapsed: false,
-            highlight: true,
-          });
-
-          window.rigo.updateOptions({
-            showBubble: true, // Show the bubble when you want to, you can call this in any time
-            context: "Some new information about the context",
-          });
-
-          // window.rigo.hide();
-        } else {
-          console.error("window.rigo is not defined");
-        }
+        window.rigo.show({
+          showBubble: true,
+          collapsed: false,
+          welcomeMessage: "Hi! How can I help you today?",
+        });
       });
     </script>
   </body>
 </html>
 ```
 
-### Options
+---
 
-```json
-{
-  "loglevel": "info", // "info" or "debug" in lowercase, specifies the logging level (just available in the `init` method)
-  "showBubble": true, // optional, it can be combined with "collapsed" to cofigure how rigobot displays on the website
-  "target": "", // optional, the bubble or the conversation window (if showBubble=false) will tooltip from here.
-  "collapsed": false, // optional, whether the chat bubble should be collapsed (closed) initially.
-  "introVideo": {
-    "url": "url of the video" // Video to show in the chat bubble
-  }, // optional, The URL of the introductory video.
-  "welcomeMessage": "I love punk", // optional, if null it will get the salutation message from the purpose
-  "purposeSlug": "", // optional string, defaults to the first purpose in the organization,
-  "completions": [], // optional array, additional context for the chat, completion object must have properties `prompt`, `answer`, and `DOMTarget`.
-  "context": "" // optional string, additional context for the chat
-}
-```
+## ⚙️ Options
 
-### Events
+Here’s a breakdown of the options you can pass to the `init`, `show`, or `updateOptions` methods:
 
-- `open_bubble`: Triggered when the bubble is opened.
-- `close_bubble`: Triggered when the bubble is closed.
-- `outgoing_message`: Triggered when the user sends a message to the bot.
-- `incoming_message`: Triggered when the bot finish processing the user message.
+| Option           | Type               | Description                                                                              |
+| ---------------- | ------------------ | ---------------------------------------------------------------------------------------- |
+| `loglevel`       | `"info"`/`"debug"` | Sets logging verbosity level.                                                            |
+| `showBubble`     | `boolean`          | Whether to display the chat bubble.                                                      |
+| `collapsed`      | `boolean`          | Whether the chat bubble starts collapsed.                                                |
+| `target`         | `string`           | CSS selector of the element to anchor the chat bubble.                                   |
+| `introVideo`     | `object`           | `{ url: string }` – URL of the introductory video.                                       |
+| `welcomeMessage` | `string`           | Message to greet the user when the chat loads.                                           |
+| `purposeSlug`    | `string`           | Identifier for the purpose of the chat (e.g., "sales", "support").                       |
+| `completions`    | `array`            | Array of `{ prompt, answer, DOMTarget }` objects for pre-configured chat interactions.   |
+| `context`        | `string`           | Additional context to provide to the chat agent.                                         |
+| `user`           | `object`           | `{ token, nickname, avatar }` – Information about the authenticated user (if available). |
 
-### Methods and properties
+---
 
-- `init(token: string, options?: Options)`: Initializes the chat bubble with the given token and options.
-- `show(Options)`: Displays the chat bubble with the specified options.
-- `hide()`: Hides the chat bubble.
-- `on(event: string, callback: (data: any) => void)`: Adds a callback function for a specific events.
-- `updateOptions(Options)`: Updates the options without triggering a new render of the chat bubble.
-- `options`: The current options of the chat bubble.
-- `callbacks`: The current callbacks of the chat bubble.
+## 🧩 Methods
 
-## License
+Here are the primary methods available:
+
+| Method          | Description                                                            |
+| --------------- | ---------------------------------------------------------------------- |
+| `init`          | Initializes Rigobot with a token and options.                          |
+| `show`          | Displays the chat bubble.                                              |
+| `hide`          | Hides the chat bubble.                                                 |
+| `on`            | Listens for specific events (e.g., `open_bubble`, `outgoing_message`). |
+| `updateOptions` | Dynamically updates chat bubble options.                               |
+
+---
+
+## 📜 License
 
 This project is licensed under the MIT License.
+
+Feel free to modify and use Rigobot Chat Bubble to enhance your website's user experience!

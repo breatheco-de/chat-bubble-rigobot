@@ -52,10 +52,16 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
     };
 
     if (window.rigo.callbacks["open_bubble"] && currentOptions.collapsed) {
-      window.rigo.callbacks["open_bubble"]({});
+      window.rigo.callbacks["open_bubble"]({
+        when: new Date().toISOString(),
+        url: window.location.href,
+      });
     }
     if (window.rigo.callbacks["close_bubble"] && !currentOptions.collapsed) {
-      window.rigo.callbacks["close_bubble"]({});
+      window.rigo.callbacks["close_bubble"]({
+        when: new Date().toISOString(),
+        url: window.location.href,
+      });
     }
   };
 

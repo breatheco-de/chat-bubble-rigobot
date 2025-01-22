@@ -5,6 +5,8 @@ import { Options } from "./types.ts";
 import { logger } from "./utils/utilities.ts";
 import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
 
+import packageJson from "../package.json";
+
 interface Rigo {
   init: (token: string, options?: Options) => void;
   show: (params: Options) => void;
@@ -21,6 +23,7 @@ interface Rigo {
   options?: Options;
   token?: string;
   root?: ReactDOMClient.Root;
+  version?: string;
 }
 
 declare global {
@@ -110,4 +113,5 @@ window.rigo = {
     const event = new CustomEvent("optionsUpdated", { detail: this.options });
     window.dispatchEvent(event);
   },
+  version: packageJson.version,
 };

@@ -209,12 +209,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           if (window.rigo.callbacks["incoming_message"]) {
             try {
               window.rigo.callbacks["incoming_message"]({
-                incoming_message: data.ai_response,
+                text: data.ai_response,
                 conversation: {
                   id: conversationId,
                   purpose: purposeSlug,
                 },
                 messages: prevMessages,
+                when: new Date().toISOString(),
+                url: window.location.href,
               });
             } catch (error) {
               logger.error("Error calling incoming_message callback", error);
@@ -296,13 +298,15 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
       if (window.rigo.callbacks["outgoing_message"]) {
         window.rigo.callbacks["outgoing_message"]({
-          outgoing_message: inputValue,
+          text: inputValue,
           conversation: {
             id: conversationId,
             purpose: purposeSlug,
           },
           messages: messages,
           context: completeContext,
+          when: new Date().toISOString(),
+          url: window.location.href,
         });
       }
     }

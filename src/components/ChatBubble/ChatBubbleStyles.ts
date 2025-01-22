@@ -341,7 +341,11 @@ export const StyledMarkdown = styled.div`
   }
 
   & pre {
-  
     scrollbar-width: none;
+  }
+
+
+  & li > p:first-child {
+    display: inline;
   }
 `;
