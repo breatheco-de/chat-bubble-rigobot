@@ -166,9 +166,11 @@ export const getBubbleStyles = (
       bottom: bottom,
       right: right,
       transition: "top 1s ease, all 1s ease",
+      cursor: "default",
     };
   }
 };
+
 
 interface VideoContainerProps {
   inner: "true" | "false";

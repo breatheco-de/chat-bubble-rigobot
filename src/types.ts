@@ -1,8 +1,15 @@
+import MarkdownIt from "markdown-it";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type TCompletion = {
   prompt: string;
   answer: string;
   DOMTarget?: string;
+};
+
+export type TMessage = {
+  text: string;
+  type: "assistant" | "user";
 };
 
 export interface ChatMessagesProps {
@@ -84,3 +91,32 @@ export interface RigobotProps {
   chatAgentHash: string;
   options: Options;
 }
+
+type TOnStartData = {
+  when: string;
+  url: string;
+};
+
+export interface TAskToRigobot {
+  prompt: string;
+  target: HTMLElement;
+  previousMessages?: TMessage[];
+  format?: "html" | "markdown";
+  useVectorStore?: boolean;
+  onComplete?: (success: boolean, data: any) => void;
+  onStart?: (data: TOnStartData) => void;
+}
+
+export interface TCompleteWithRigo {
+  templateSlug: string;
+  payload: { [key: string]: string };
+  format: "html" | "markdown";
+  target: HTMLElement;
+  onComplete: (success: boolean, data: any) => void;
+  onStart?: (data: TOnStartData) => void;
+}
+
+export type TAskJob = {
+  stop: () => void;
+  run: () => void;
+};

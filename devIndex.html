@@ -9,6 +9,13 @@
   <body style="height: 300vh">
     <h1 id="chat-grow">s</h1>
     <button onclick="moveRigo()">Move RIgo</button>
+    <button onclick="askRigobot()">Ask Rigobot</button>
+    <button onclick="completeRigobot()">Complete Rigobot</button>
+    <button onclick="stopGeneration()">Stop Generation</button>
+    <div id="chat-target">
+      <h1>An H1 in the target</h1>
+    </div>
+
     <div
       style="position: absolute; top: 3000px; right: 50%"
       id="bottom-element"
@@ -30,6 +37,7 @@
     <script type="module" src="/src/main.tsx"></script>
 
     <script>
+      let job = null;
       function moveRigo() {
         const possibilities = [
           ".bottom-left-element",
@@ -49,6 +57,44 @@
           },
         });
       }
+
+      function askRigobot() {
+        const target = document.querySelector("#chat-target");
+        job = window.rigo.ask({
+          prompt: "How can I start learning AI?",
+          target: target,
+          format: "html",
+          onComplete: (data) => {
+            console.log("onComplete", data);
+          },
+        });
+
+        job?.run();
+      }
+
+      function stopGeneration() {
+        job?.stop();
+      }
+
+      async function completeRigobot() {
+        const target = document.querySelector("#chat-target");
+
+        const prompt = await window.prompt("Enter a name");
+        job = window.rigo.complete({
+          templateSlug: "testing-prompt",
+          payload: {
+            user_name: prompt,
+          },
+
+          target: target,
+          format: "html",
+          onComplete: (data) => {
+            console.log("onComplete", data);
+          },
+        });
+
+        job?.run();
+      }
     </script>
 
     <script>
@@ -66,12 +112,11 @@
               },
             ],
             // socketHost: "http://127.0.0.1:8000",
-            introVideo: {
-              url: "https://www.youtube.com/watch?v=sg_XoPrwjI0&t=3s",
-            },
+
+            // socketHost: "http://127.0.0.1:8003",
             context: "The user is called: Lulú",
             user: {
-              token: "some user token ",
+              token: "0e2137217a1814f69c5619dc8371c428d4b4ada8",
             },
           });
 

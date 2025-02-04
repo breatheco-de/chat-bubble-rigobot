@@ -154,6 +154,276 @@ window.rigo.on("incoming_message", (data) => {
 });
 ```
 
+Aquí tienes una sección actualizada del `README.md` que documenta los métodos `ask` y `complete`:
+
+---
+
+### 6️⃣ Asking Rigobot a Question (`ask`)
+
+The `ask` method allows you to send a prompt to the AI and receive a response in real-time. It also supports streaming responses directly into a DOM element.
+
+#### Usage:
+
+```javascript
+const job = window.rigo.ask({
+  prompt: "How can I start learning AI?", // The question to ask
+  target: document.querySelector("#chat-target"), // DOM element to display the response
+  format: "html", // Format of the response: "html" or "markdown"
+  onStart: (data) => {
+    console.log("Streaming started:", data);
+  },
+  onComplete: (success, data) => {
+    if (success) {
+      console.log("Response received:", data);
+    } else {
+      console.error("Error:", data.error);
+    }
+  },
+});
+
+// Start the job
+job.run();
+
+// Optionally stop the job if needed
+job.stop();
+```
+
+#### Parameters:
+
+| Parameter          | Type                  | Description                                                                  |
+| ------------------ | --------------------- | ---------------------------------------------------------------------------- |
+| `prompt`           | `string`              | The question or message to send to the AI.                                   |
+| `target`           | `HTMLElement`         | The DOM element where the response will be rendered.                         |
+| `format`           | `"html"`/`"markdown"` | The format of the response.                                                  |
+| `onStart`          | `function`            | Callback triggered when the response streaming starts.                       |
+| `onComplete`       | `function`            | Callback triggered when the response is fully received or an error occurs.   |
+| `previousMessages` | `array`               | (Optional) Previous chat messages to provide context.                        |
+| `useVectorStore`   | `boolean`             | (Optional) Whether to use vector embeddings for context. Defaults to `true`. |
+
+---
+
+### 7️⃣ Completing a Template (`complete`)
+
+The `complete` method allows you to use a predefined template to generate structured AI responses. This is useful for scenarios where you want to provide specific input data and get a detailed output.
+
+#### Usage:
+
+```javascript
+const job = window.rigo.complete({
+  templateSlug: "testing-prompt", // The slug of the template to use
+  payload: {
+    user_name: "John Doe", // Inputs for the template
+  },
+  target: document.querySelector("#chat-target"), // DOM element to display the response
+  format: "html", // Format of the response: "html" or "markdown"
+  onStart: (data) => {
+    console.log("Template completion started:", data);
+  },
+  onComplete: (success, data) => {
+    if (success) {
+      console.log("Completion received:", data);
+    } else {
+      console.error("Error:", data.error);
+    }
+  },
+});
+
+// Start the job
+job.run();
+
+// Optionally stop the job if needed
+job.stop();
+```
+
+#### Parameters:
+
+| Parameter      | Type                  | Description                                                                |
+| -------------- | --------------------- | -------------------------------------------------------------------------- |
+| `templateSlug` | `string`              | The identifier of the template to use.                                     |
+| `payload`      | `object`              | The input data required by the template.                                   |
+| `target`       | `HTMLElement`         | The DOM element where the response will be rendered.                       |
+| `format`       | `"html"`/`"markdown"` | The format of the response.                                                |
+| `onStart`      | `function`            | Callback triggered when the response streaming starts.                     |
+| `onComplete`   | `function`            | Callback triggered when the response is fully received or an error occurs. |
+
+---
+
+### Example Integration:
+
+Here’s an example of using both `ask` and `complete` methods:
+
+```javascript
+document.querySelector("#ask-button").addEventListener("click", function () {
+  const job = window.rigo.ask({
+    prompt: "What is the capital of France?",
+    target: document.querySelector("#response-container"),
+    format: "html",
+    onStart: () => console.log("Asking started"),
+    onComplete: (success, data) => {
+      if (success) console.log("Answer:", data);
+      else console.error("Error:", data.error);
+    },
+  });
+
+  job.run();
+});
+
+document
+  .querySelector("#complete-button")
+  .addEventListener("click", function () {
+    const job = window.rigo.complete({
+      templateSlug: "greeting-template",
+      payload: { user_name: "Alice" },
+      target: document.querySelector("#response-container"),
+      format: "html",
+      onStart: () => console.log("Completion started"),
+      onComplete: (success, data) => {
+        if (success) console.log("Completion:", data);
+        else console.error("Error:", data.error);
+      },
+    });
+
+    job.run();
+  });
+```
+
+Aquí tienes una sección actualizada del `README.md` que documenta los métodos `ask` y `complete`:
+
+---
+
+### 6️⃣ Asking Rigobot a Question (`ask`)
+
+The `ask` method allows you to send a prompt to the AI and receive a response in real-time. It also supports streaming responses directly into a DOM element.
+
+> NOTE: To use any of these methods you should call the `init` method first.
+
+#### Usage:
+
+```javascript
+const job = window.rigo.ask({
+  prompt: "How can I start learning AI?", // The question to ask
+  target: document.querySelector("#chat-target"), // DOM element to display the response
+  format: "html", // Format of the response: "html" or "markdown"
+  onStart: (data) => {
+    console.log("Streaming started:", data);
+  },
+  onComplete: (success, data) => {
+    if (success) {
+      console.log("Response received:", data);
+    } else {
+      console.error("Error:", data.error);
+    }
+  },
+});
+
+// Start the job
+job.run();
+
+// Optionally stop the job if needed
+job.stop();
+```
+
+#### Parameters:
+
+| Parameter          | Type                  | Description                                                                  |
+| ------------------ | --------------------- | ---------------------------------------------------------------------------- |
+| `prompt`           | `string`              | The question or message to send to the AI.                                   |
+| `target`           | `HTMLElement`         | The DOM element where the response will be rendered.                         |
+| `format`           | `"html"`/`"markdown"` | The format of the response.                                                  |
+| `onStart`          | `function`            | Callback triggered when the response streaming starts.                       |
+| `onComplete`       | `function`            | Callback triggered when the response is fully received or an error occurs.   |
+| `previousMessages` | `array`               | (Optional) Previous chat messages to provide context.                        |
+| `useVectorStore`   | `boolean`             | (Optional) Whether to use vector embeddings for context. Defaults to `true`. |
+
+---
+
+### 7️⃣ Completing a Template (`complete`)
+
+The `complete` method allows you to use a predefined template to generate structured AI responses. This is useful for scenarios where you want to provide specific input data and get a detailed output.
+
+#### Usage:
+
+```javascript
+const job = window.rigo.complete({
+  templateSlug: "testing-prompt", // The slug of the template to use
+  payload: {
+    user_name: "John Doe", // Inputs for the template
+  },
+  target: document.querySelector("#chat-target"), // DOM element to display the response
+  format: "html", // Format of the response: "html" or "markdown"
+  onStart: (data) => {
+    console.log("Template completion started:", data);
+  },
+  onComplete: (success, data) => {
+    if (success) {
+      console.log("Completion received:", data);
+    } else {
+      console.error("Error:", data.error);
+    }
+  },
+});
+
+// Start the job
+job.run();
+
+// Optionally stop the job if needed
+job.stop();
+```
+
+#### Parameters:
+
+| Parameter      | Type                  | Description                                                                |
+| -------------- | --------------------- | -------------------------------------------------------------------------- |
+| `templateSlug` | `string`              | The identifier of the template to use.                                     |
+| `payload`      | `object`              | The input data required by the template.                                   |
+| `target`       | `HTMLElement`         | The DOM element where the response will be rendered.                       |
+| `format`       | `"html"`/`"markdown"` | The format of the response.                                                |
+| `onStart`      | `function`            | Callback triggered when the response streaming starts.                     |
+| `onComplete`   | `function`            | Callback triggered when the response is fully received or an error occurs. |
+
+---
+
+### Example Integration:
+
+Here’s an example of using both `ask` and `complete` methods:
+
+```javascript
+document.querySelector("#ask-button").addEventListener("click", function () {
+  const job = window.rigo.ask({
+    prompt: "What is the capital of France?",
+    target: document.querySelector("#response-container"),
+    format: "html",
+    onStart: () => console.log("Asking started"),
+    onComplete: (success, data) => {
+      if (success) console.log("Answer:", data);
+      else console.error("Error:", data.error);
+    },
+  });
+
+  job.run();
+});
+
+document
+  .querySelector("#complete-button")
+  .addEventListener("click", function () {
+    const job = window.rigo.complete({
+      templateSlug: "greeting-template",
+      payload: { user_name: "Alice" },
+      target: document.querySelector("#response-container"),
+      format: "html",
+      onStart: () => console.log("Completion started"),
+      onComplete: (success, data) => {
+        if (success) console.log("Completion:", data);
+        else console.error("Error:", data.error);
+      },
+    });
+
+    job.run();
+  });
+```
+
+With these methods, you can take full advantage of Rigobot's capabilities to create dynamic and interactive experiences!
+
 ---
 
 ## 🌟 Example Implementation

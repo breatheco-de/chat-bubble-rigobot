@@ -1,6 +1,6 @@
 {
-  "name": "rigobot-chat-bubble",
-  "version": "0.0.69",
+  "name": "@rigo-ai/bubble",
+  "version": "0.1.1",
   "type": "module",
   "files": [
     "dist",
@@ -15,6 +15,8 @@
   "dependencies": {
     "@fontsource/lato": "^5.0.23",
     "highlight.js": "^11.10.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-link-attributes": "^4.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^9.0.3",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
+    "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/react-syntax-highlighter": "^15.5.13",

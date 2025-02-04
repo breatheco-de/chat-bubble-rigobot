@@ -1,3 +1,5 @@
+import MarkdownIt from "markdown-it";
+import linkAttributes from "markdown-it-link-attributes";
 
 export function extractMovetoContent(text: string): {
   targetElement: string | null;
@@ -35,7 +37,7 @@ export const logger = {
       typeof logger.loglevel === "string" &&
       logger.loglevel.toLowerCase() === "debug"
     ) {
-      console.log(`DEBUG:`, ...args); // Log multiple arguments
+      console.debug(`DEBUG:`, ...args);
     }
   },
   info: (...args: any[]) => {
@@ -51,7 +53,6 @@ export const logger = {
     console.error(`ERROR:`, ...args); // Log multiple arguments
   },
 };
-
 
 export const createContext = (
   userContext: string,
@@ -126,4 +127,28 @@ export const initConversation = async ({
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
   }
+};
+
+export function generateRandomId(): string {
+  const idLength = 16;
+  let randomId = "";
+
+  for (let i = 0; i < idLength; i++) {
+    randomId += Math.floor(Math.random() * 10); // Generate a random digit (0-9)
+  }
+
+  return randomId;
+}
+
+export const convertToHTML = (markdown: string) => {
+  const md = new MarkdownIt({
+    linkify: true,
+  });
+  md.use(linkAttributes, {
+    attrs: {
+      target: "_blank",
+      rel: "noopener noreferrer",
+    },
+  });
+  return md.render(markdown);
 };
