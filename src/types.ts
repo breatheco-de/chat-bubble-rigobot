@@ -1,5 +1,3 @@
-import MarkdownIt from "markdown-it";
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type TCompletion = {
   prompt: string;

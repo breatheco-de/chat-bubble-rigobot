@@ -1,7 +1,8 @@
 {
   "name": "@rigo-ai/bubble",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
+  "private": false,
   "files": [
     "dist",
     "src"
