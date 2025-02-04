@@ -13,7 +13,7 @@ node utils/prepareIndex.js --target prod
 
 npm run build
 
-npm publish
+npm publish --access public
 
 # Perform git operations
 git add .
