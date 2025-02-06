@@ -12,6 +12,8 @@
     <button onclick="askRigobot()">Ask Rigobot</button>
     <button onclick="completeRigobot()">Complete Rigobot</button>
     <button onclick="stopGeneration()">Stop Generation</button>
+    <button onclick="tryRigobot()">Try Rigobot</button>
+    <button onclick="closeRigobot()">Close Rigobot</button>
     <div id="chat-target">
       <h1>An H1 in the target</h1>
     </div>
@@ -94,6 +96,25 @@
         });
 
         job?.run();
+      }
+
+      function tryRigobot(targetId) {
+        window.rigo.updateOptions({
+          showBubble: true,
+          target: targetId,
+          highlight: true,
+          welcomeMessage: "Hello my broder!",
+          collapsed: false,
+
+          purposeSlug: "4geekscom-public-agent",
+        });
+      }
+
+      function closeRigobot() {
+        window.rigo.updateOptions({
+          showBubble: false,
+          collapsed: true,
+        });
       }
     </script>
 

@@ -4,22 +4,27 @@ import { RigobotProps } from "../../types";
 import React, { useEffect, useState } from "react";
 import { logger } from "../../utils/utilities";
 
+const reportOpenAndClosed = (collapsed: boolean) => {
+  if (window.rigo.callbacks["open_bubble"] && !collapsed) {
+    window.rigo.callbacks["open_bubble"]({
+      when: new Date().toISOString(),
+      url: window.location.href,
+    });
+  }
+
+  if (window.rigo.callbacks["close_bubble"] && collapsed) {
+    window.rigo.callbacks["close_bubble"]({
+      when: new Date().toISOString(),
+
+      url: window.location.href,
+    });
+  }
+};
+
 export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   const [currentOptions, setCurrentOptions] = useState(options);
 
   const [originElement, setOriginElement] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const handleOptionsUpdate = (event: any) => {
-      setCurrentOptions(event.detail);
-    };
-
-    window.addEventListener("optionsUpdated", handleOptionsUpdate);
-
-    return () => {
-      window.removeEventListener("optionsUpdated", handleOptionsUpdate);
-    };
-  }, []);
 
   useEffect(() => {
     if (currentOptions.target) {
@@ -30,6 +35,23 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
     } else {
       setOriginElement(null);
     }
+
+    const handleOptionsUpdate = (event: any) => {
+      console.log("REceiving update options event");
+
+      const currentCollapsedState = currentOptions.collapsed;
+
+      setCurrentOptions(event.detail);
+      if (currentCollapsedState !== event.detail.collapsed) {
+        reportOpenAndClosed(event.detail.collapsed);
+      }
+    };
+
+    window.addEventListener("optionsUpdated", handleOptionsUpdate);
+
+    return () => {
+      window.removeEventListener("optionsUpdated", handleOptionsUpdate);
+    };
   }, [currentOptions]);
 
   const completeContext = `
@@ -42,27 +64,17 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
   `;
 
   const toggleCollapsed = () => {
+    const newCollapsedState = !currentOptions.collapsed;
     setCurrentOptions({
       ...currentOptions,
-      collapsed: !currentOptions.collapsed,
+      collapsed: newCollapsedState,
     });
     window.rigo.options = {
       ...window.rigo.options,
-      collapsed: !currentOptions.collapsed,
+      collapsed: newCollapsedState,
     };
 
-    if (window.rigo.callbacks["open_bubble"] && currentOptions.collapsed) {
-      window.rigo.callbacks["open_bubble"]({
-        when: new Date().toISOString(),
-        url: window.location.href,
-      });
-    }
-    if (window.rigo.callbacks["close_bubble"] && !currentOptions.collapsed) {
-      window.rigo.callbacks["close_bubble"]({
-        when: new Date().toISOString(),
-        url: window.location.href,
-      });
-    }
+    reportOpenAndClosed(newCollapsedState);
   };
 
   return (

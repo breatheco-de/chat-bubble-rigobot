@@ -300,10 +300,6 @@ window.rigo = {
   },
 
   updateOptions: function (newOptions: Options) {
-    logger.debug("Updating options for Rigobot");
-
-    console.log(`Previous collapsed state: ${this.options?.collapsed}`);
-    console.log(`Incoming collapsed state: ${newOptions.collapsed}`);
     if (newOptions.collapsed === undefined) {
       newOptions.collapsed = this.options?.collapsed;
     }

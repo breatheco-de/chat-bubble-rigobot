@@ -476,10 +476,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   };
 
   const getRadarElementProps = () => {
-    logger.debug("Changing props for Radar");
-
     if (originElementState) {
-      logger.debug("Target element found! Calculating radar dimensions");
       const rect = originElementState.getBoundingClientRect();
 
       const top =
