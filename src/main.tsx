@@ -102,9 +102,10 @@ window.rigo = {
     target,
     previousMessages = [],
     useVectorStore = true,
+    format = "markdown",
     onComplete,
     onStart,
-    format = "markdown",
+    onStream,
   }: TAskToRigobot) {
     logger.debug("Asking Rigobot a question");
 
@@ -133,8 +134,15 @@ window.rigo = {
     const jobId = generateRandomId();
     let started = false;
 
-    if (!target || !(target instanceof HTMLElement)) {
-      const eMessage = "No target provided or target is not an HTMLElement";
+    if (!target && !onComplete) {
+      logger.error(
+        "No target or onComplete provided, please set one of them to use the ask method"
+      );
+      return;
+    }
+
+    if (target && !(target instanceof HTMLElement)) {
+      const eMessage = "Target is not an HTMLElement";
       console.log(target);
 
       logger.error(eMessage);
@@ -151,13 +159,18 @@ window.rigo = {
         started = true;
       }
 
-      if (target && target instanceof HTMLElement && format === "markdown") {
+      if (target && format === "markdown") {
         target.innerHTML += data.chunk;
-      } else if (target && target instanceof HTMLElement && format === "html") {
+      } else if (target && format === "html") {
         target.innerHTML = convertToHTML(data.cumulative);
       } else {
         logger.error("Target is not an HTMLElement or format is not supported");
       }
+
+      onStream?.({
+        chunk: data.chunk,
+        cumulative: data.cumulative,
+      });
     });
 
     globalSocket?.on(`answer-stream-end-${jobId}`, (data: any) => {
@@ -199,11 +212,12 @@ window.rigo = {
 
   complete: function ({
     templateSlug,
-    payload,
-    format,
+    payload = {},
+    format = "html",
     target,
     onComplete,
     onStart,
+    onStream,
   }: TCompleteWithRigo) {
     logger.debug("Completing Rigobot");
 
@@ -213,10 +227,17 @@ window.rigo = {
       return;
     }
 
-    if (!target || !(target instanceof HTMLElement)) {
-      logger.error("No target provided or target is not an HTMLElement");
+    if (!target && !onComplete) {
+      logger.error(
+        "No target or onComplete provided, please set one of them to use the complete method"
+      );
+      return;
+    }
+
+    if (target && !(target instanceof HTMLElement)) {
+      logger.error("Target is not an HTMLElement");
       onComplete?.(false, {
-        error: "No target provided or target is not an HTMLElement",
+        error: "Target is not an HTMLElement",
       });
       return;
     }
@@ -256,13 +277,18 @@ window.rigo = {
         started = true;
       }
 
-      if (target && target instanceof HTMLElement && format === "markdown") {
+      if (target && format === "markdown") {
         target.innerHTML += data.chunk;
-      } else if (target && target instanceof HTMLElement && format === "html") {
+      } else if (target && format === "html") {
         target.innerHTML = convertToHTML(data.cumulative);
       } else {
         logger.error("Target is not an HTMLElement or format is not supported");
       }
+
+      onStream?.({
+        chunk: data.chunk,
+        cumulative: data.cumulative,
+      });
     });
 
     globalSocket?.on(`completion-stream-end-${jobId}`, (data: any) => {

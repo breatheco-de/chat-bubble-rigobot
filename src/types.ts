@@ -97,21 +97,28 @@ type TOnStartData = {
 
 export interface TAskToRigobot {
   prompt: string;
-  target: HTMLElement;
+  target?: HTMLElement;
   previousMessages?: TMessage[];
   format?: "html" | "markdown";
   useVectorStore?: boolean;
   onComplete?: (success: boolean, data: any) => void;
   onStart?: (data: TOnStartData) => void;
+  onStream?: (data: TOnStreamData) => void;
 }
+
+type TOnStreamData = {
+  chunk: string;
+  cumulative: string;
+};
 
 export interface TCompleteWithRigo {
   templateSlug: string;
-  payload: { [key: string]: string };
-  format: "html" | "markdown";
-  target: HTMLElement;
-  onComplete: (success: boolean, data: any) => void;
+  payload?: { [key: string]: string };
+  format?: "html" | "markdown";
+  target?: HTMLElement;
+  onComplete?: (success: boolean, data: any) => void;
   onStart?: (data: TOnStartData) => void;
+  onStream?: (data: TOnStreamData) => void;
 }
 
 export type TAskJob = {

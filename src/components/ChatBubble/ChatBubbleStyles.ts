@@ -171,7 +171,6 @@ export const getBubbleStyles = (
   }
 };
 
-
 interface VideoContainerProps {
   inner: "true" | "false";
 }
@@ -195,6 +194,7 @@ export const StyledMessage = styled.div<StyledMessageProps>`
   display: flex;
   width: 100%;
   gap: 4px;
+  font-size: 18px;
   margin-bottom: 10px;
   align-items: center;
   white-space: normal;
@@ -313,13 +313,19 @@ export const PalpitatingBubble = styled.div<PalpitatingBubbleProps>`
   position: absolute;
 `;
 
-export const ChatContainerStyled = styled.div`
+interface ChatContainerStyledProps {
+  isMobile: boolean;
+}
+export const ChatContainerStyled = styled.div<ChatContainerStyledProps>`
   background-color: white;
   border-radius: 10px;
-  position: absolute;
-  width: min(400px, 85vw);
-  bottom: 60px;
+  position: ${(props) => (props.isMobile ? "fixed" : "absolute")};
+  width: min(400px, 100vw);
+  bottom: ${(props) => (props.isMobile ? "0px" : "50px")};
   z-index: 1000;
+
+  height: min(calc(100dvh), 580px);
+
 `;
 
 export const StyledMarkdown = styled.div`
@@ -345,7 +351,6 @@ export const StyledMarkdown = styled.div`
   & pre {
     scrollbar-width: none;
   }
-
 
   & li > p:first-child {
     display: inline;

@@ -25,6 +25,11 @@ import { Message, RigoThumbnail } from "../Smalls/Smalls";
 import { useStore } from "../../utils/store";
 import { createPortal } from "react-dom";
 
+const MINIMUN_VIEWPORT_SIZE = {
+  width: 400,
+  height: 600,
+};
+
 type TChatInputProps = {
   inputValue: string;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -343,7 +348,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     <div
       style={{
         position: "relative",
-        height: "600px",
+        height: "min(580px, calc(100dvh))",
         width: "100%",
         overflowY: "hidden",
         border: "1px solid #ccc",
@@ -416,10 +421,23 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [originElementState, setOriginElementState] =
     useState<HTMLElement | null>(originElement as HTMLElement);
+  const [isMobile, setIsMobile] = useState(false);
   const [bubbleStyles, setBubbleStyles] = useState(
     getBubbleStyles(originElementState, null)
   );
   const bubbleStylesRef = useRef(bubbleStyles);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < MINIMUN_VIEWPORT_SIZE.width);
+
+    window.addEventListener("resize", () => {
+      setIsMobile(window.innerWidth < MINIMUN_VIEWPORT_SIZE.width);
+    });
+
+    return () => {
+      window.removeEventListener("resize", () => {});
+    };
+  }, []);
 
   useEffect(() => {
     if (!collapsed && containerRef.current) {
@@ -431,7 +449,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       const bodyScrollHeight = document.body.scrollHeight;
       // Adjust horizontal position
       if (rect.right > viewportWidth) {
-        chatContainerRef.current.style.right = `5px`;
+        chatContainerRef.current.style.right = `0px`;
         logger.debug("Right side of chat bubble is out of viewport");
       } else if (rect.left < 0) {
         chatContainerRef.current.style.left = "0px";
@@ -447,14 +465,6 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       }
     }
   }, [collapsed]);
-
-  // useEffect(() => {
-  //   bubbleStylesRef.current = bubbleStyles;
-  //   // toggleCollapsed({ enforce: true });
-  //   setTimeout(() => {
-  //     // toggleCollapsed({ enforce: false });
-  //   }, 100);
-  // }, [bubbleStyles]);
 
   useEffect(() => {
     setBubbleStyles(
@@ -529,7 +539,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
             </>
           )}
           {!collapsed && (
-            <ChatContainerStyled ref={chatContainerRef}>
+            <ChatContainerStyled isMobile={isMobile} ref={chatContainerRef}>
               <ChatMessages
                 user={user}
                 host={host}
