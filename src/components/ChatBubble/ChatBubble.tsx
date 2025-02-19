@@ -163,7 +163,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     };
 
     socket.on("connect", () => {
-      console.log("Socket connected");
       socket.emit("start", onStartData);
     });
   }, [conversationId, socket]);

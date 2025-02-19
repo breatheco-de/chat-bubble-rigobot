@@ -6,7 +6,8 @@ import { generateRandomId, logger, convertToHTML } from "./utils/utilities.ts";
 import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
 
 import packageJson from "../package.json";
-import { globalSocket } from "./utils/store.ts";
+
+import io from "socket.io-client";
 
 interface Rigo {
   init: (token: string, options?: Options) => void;
@@ -131,6 +132,10 @@ window.rigo = {
       return;
     }
 
+    let temporalSocket = io(
+      this.options?.socketHost ?? "https://ai.4geeks.com"
+    );
+
     const jobId = generateRandomId();
     let started = false;
 
@@ -150,7 +155,7 @@ window.rigo = {
       return;
     }
 
-    globalSocket?.on(`answer-stream-${jobId}`, (data: any) => {
+    temporalSocket?.on(`answer-stream-${jobId}`, (data: any) => {
       if (!started) {
         onStart?.({
           when: new Date().toISOString(),
@@ -173,18 +178,19 @@ window.rigo = {
       });
     });
 
-    globalSocket?.on(`answer-stream-end-${jobId}`, (data: any) => {
+    temporalSocket?.on(`answer-stream-end-${jobId}`, (data: any) => {
       onComplete?.(true, data);
     });
 
     const job: TAskJob = {
       stop: () => {
-        globalSocket?.off(`answer-stream-end-${jobId}`);
-        globalSocket?.off(`answer-stream-${jobId}`);
+        temporalSocket?.off(`answer-stream-end-${jobId}`);
+        temporalSocket?.off(`answer-stream-${jobId}`);
+        temporalSocket?.disconnect();
       },
 
       run: () => {
-        globalSocket?.emit("ask", {
+        temporalSocket?.emit("ask", {
           jobId,
           message: {
             text: prompt,
@@ -265,10 +271,13 @@ window.rigo = {
       return;
     }
 
+    let temporalSocket = io(
+      this.options?.socketHost ?? "https://ai.4geeks.com"
+    );
     const jobId = generateRandomId();
     let started = false;
 
-    globalSocket?.on(`completion-stream-${jobId}`, (data: any) => {
+    temporalSocket?.on(`completion-stream-${jobId}`, (data: any) => {
       if (!started) {
         onStart?.({
           when: new Date().toISOString(),
@@ -291,22 +300,24 @@ window.rigo = {
       });
     });
 
-    globalSocket?.on(`completion-stream-end-${jobId}`, (data: any) => {
+    temporalSocket?.on(`completion-stream-end-${jobId}`, (data: any) => {
       onComplete?.(true, data);
+      temporalSocket?.disconnect();
     });
 
-    globalSocket?.on(`error-${jobId}`, (data: any) => {
+    temporalSocket?.on(`error-${jobId}`, (data: any) => {
       onComplete?.(false, data);
     });
 
     const job: TAskJob = {
       stop: () => {
-        globalSocket?.off(`completion-stream-end-${jobId}`);
-        globalSocket?.off(`completion-stream-${jobId}`);
+        temporalSocket?.off(`completion-stream-end-${jobId}`);
+        temporalSocket?.off(`completion-stream-${jobId}`);
+        temporalSocket?.disconnect();
       },
 
       run: () => {
-        globalSocket?.emit("complete", {
+        temporalSocket?.emit("complete", {
           jobId,
           inputs: payload,
           templateSlug,
