@@ -149,6 +149,17 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    if (socket && !socket.connected) {
+      socket.connect();
+    }
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!conversationId) return;
 
     if (!socket) {

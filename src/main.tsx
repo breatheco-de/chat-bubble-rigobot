@@ -104,6 +104,7 @@ window.rigo = {
     previousMessages = [],
     useVectorStore = true,
     format = "markdown",
+    // stream = false,
     onComplete,
     onStart,
     onStream,
@@ -180,6 +181,7 @@ window.rigo = {
 
     temporalSocket?.on(`answer-stream-end-${jobId}`, (data: any) => {
       onComplete?.(true, data);
+      temporalSocket?.disconnect();
     });
 
     const job: TAskJob = {
@@ -196,6 +198,7 @@ window.rigo = {
             text: prompt,
             image: null,
           },
+          // stream: stream,
 
           purpose: {
             slug: this.options?.purposeSlug,
@@ -220,6 +223,7 @@ window.rigo = {
     templateSlug,
     payload = {},
     format = "html",
+    stream = false,
     target,
     onComplete,
     onStart,
@@ -322,6 +326,7 @@ window.rigo = {
           inputs: payload,
           templateSlug,
           includePurposeBrief: false,
+          stream: stream,
           auth: {
             token: this.options?.user?.token,
           },

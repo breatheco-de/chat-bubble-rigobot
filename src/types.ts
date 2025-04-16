@@ -101,6 +101,7 @@ export interface TAskToRigobot {
   previousMessages?: TMessage[];
   format?: "html" | "markdown";
   useVectorStore?: boolean;
+  // stream?: boolean;
   onComplete?: (success: boolean, data: any) => void;
   onStart?: (data: TOnStartData) => void;
   onStream?: (data: TOnStreamData) => void;
@@ -116,6 +117,7 @@ export interface TCompleteWithRigo {
   payload?: { [key: string]: string };
   format?: "html" | "markdown";
   target?: HTMLElement;
+  stream?: boolean;
   onComplete?: (success: boolean, data: any) => void;
   onStart?: (data: TOnStartData) => void;
   onStream?: (data: TOnStreamData) => void;
