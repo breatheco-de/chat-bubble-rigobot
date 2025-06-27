@@ -28,6 +28,10 @@ export interface ChatMessagesProps {
   introVideo?: TIntroVideo;
   purposeSlug?: string;
   setOriginElementBySelector: (selector: string) => void;
+  userMessage?: {
+    text: string;
+    autoSend?: boolean;
+  };
 }
 
 export interface ChatBubbleProps {
@@ -50,6 +54,10 @@ export interface ChatBubbleProps {
   purposeSlug?: string;
   highlight?: boolean;
   toggleCollapsed: () => void;
+  userMessage?: {
+    text: string;
+    autoSend?: boolean;
+  };
 }
 
 export type TIntroVideo = {
@@ -67,6 +75,10 @@ export interface Options {
   completions?: TCompletion[];
   collapsed?: boolean;
   purposeId?: number;
+  userMessage?: {
+    text: string;
+    autoSend?: boolean;
+  };
   purposeSlug?: string;
   highlight?: boolean;
   loglevel?: "debug" | "info";

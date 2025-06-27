@@ -65,7 +65,7 @@ const ChatInput = ({
       <input
         type="text"
         placeholder={placeholder}
-        value={inputValue}
+        defaultValue={inputValue}
         // onChange={(e) => setInputValue(e.target.value)}
         onChange={onInputChange}
         onKeyUp={onKeyUp}
@@ -118,6 +118,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   introVideo,
   purposeSlug,
   setOriginElementBySelector,
+  userMessage = { text: "", autoSend: false },
 }) => {
   const {
     storedMessages,
@@ -140,7 +141,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     // ...DEFAULT_EXAMPLE_MESSAGe,
     ...storedMessages,
   ]);
-  const [inputValue, setInputValue] = useState("");
+  const inputValueRef = useRef("");
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const scrollPosition = useRef(0);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -275,8 +276,19 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   };
 
+  useEffect(() => {
+    logger.debug("userMessage", userMessage);
+    if (userMessage && userMessage.text) {
+      inputValueRef.current = userMessage.text;
+      if (userMessage.autoSend) {
+        handleSendMessage();
+        window.dispatchEvent(new CustomEvent("messageSent"));
+      }
+    }
+  }, [userMessage]);
+
   const handleSendMessage = () => {
-    if (inputValue.trim() && socket) {
+    if (inputValueRef.current.trim() && socket) {
       const completeContext = createContext(
         user.context,
         JSON.stringify(completions),
@@ -286,7 +298,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       const messageData = {
         message: {
           type: "user",
-          text: inputValue,
+          text: inputValueRef.current,
           context: completeContext,
         },
         conversation: {
@@ -300,20 +312,20 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
       const newMessages = [
         ...messages,
-        { text: inputValue, sender: "person" },
+        { text: inputValueRef.current, sender: "person" },
         { text: "", sender: "ai" },
       ];
       setMessages(newMessages);
       // @ts-ignore
       setStoredMessages(newMessages);
 
-      setInputValue("");
+      inputValueRef.current = "";
       setIsLoading(true);
       setAutoScroll(true);
 
       if (window.rigo.callbacks["outgoing_message"]) {
         window.rigo.callbacks["outgoing_message"]({
-          text: inputValue,
+          text: inputValueRef.current,
           conversation: {
             id: conversationId,
             purpose: purposeSlug,
@@ -334,7 +346,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   };
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    inputValueRef.current = e.target.value;
   };
 
   const handleScroll = () => {
@@ -401,7 +413,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       </div>
       <ChatInput
         placeholder={isLoading ? "Thinking..." : "Ask Rigobot..."}
-        inputValue={inputValue}
+        inputValue={inputValueRef.current}
         onKeyUp={handleKeyUp}
         onSubmit={handleSendMessage}
         onInputChange={onInputChange}
@@ -425,6 +437,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   purposeSlug,
   highlight,
   toggleCollapsed,
+  userMessage,
 }) => {
   const backdropRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -563,6 +576,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                 backdropRef={backdropRef}
                 introVideo={introVideo}
                 setOriginElementBySelector={setOriginElementBySelector}
+                userMessage={userMessage}
               />
             </ChatContainerStyled>
           )}

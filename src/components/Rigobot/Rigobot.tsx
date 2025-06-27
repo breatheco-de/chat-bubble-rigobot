@@ -48,11 +48,20 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
     };
 
     window.addEventListener("optionsUpdated", handleOptionsUpdate);
+    window.addEventListener("messageSent", handleMessageSent);
 
     return () => {
       window.removeEventListener("optionsUpdated", handleOptionsUpdate);
+      window.removeEventListener("messageSent", handleMessageSent);
     };
   }, [currentOptions]);
+
+  const handleMessageSent = () => {
+    setCurrentOptions({
+      ...currentOptions,
+      userMessage: undefined,
+    });
+  };
 
   const completeContext = `
   <page_context info="This context indicates information about the current website in which you are working on.">
@@ -110,6 +119,7 @@ export const Rigobot: React.FC<RigobotProps> = ({ chatAgentHash, options }) => {
       showBubble={currentOptions.showBubble}
       highlight={currentOptions.highlight}
       toggleCollapsed={toggleCollapsed}
+      userMessage={currentOptions.userMessage}
     />
   );
 };
