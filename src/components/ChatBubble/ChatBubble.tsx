@@ -33,7 +33,7 @@ const MINIMUN_VIEWPORT_SIZE = {
 type TChatInputProps = {
   inputValue: string;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onKeyUp: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onEnterPressed: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onSubmit: () => void;
   placeholder: string;
 };
@@ -41,10 +41,11 @@ type TChatInputProps = {
 const ChatInput = ({
   inputValue,
   onInputChange,
-  onKeyUp,
   onSubmit,
   placeholder,
+  onEnterPressed,
 }: TChatInputProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div
       style={{
@@ -64,11 +65,18 @@ const ChatInput = ({
     >
       <input
         type="text"
+        ref={inputRef}
         placeholder={placeholder}
         defaultValue={inputValue}
         // onChange={(e) => setInputValue(e.target.value)}
         onChange={onInputChange}
-        onKeyUp={onKeyUp}
+        onKeyUp={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onEnterPressed(e);
+            inputRef.current!.value = "";
+          }
+        }}
         style={{
           padding: "10px",
           width: "100%",
@@ -79,7 +87,13 @@ const ChatInput = ({
           outline: `1px solid ${rootVariables.lightGrey}`,
         }}
       />
-      <span style={{ cursor: "pointer" }} onClick={onSubmit}>
+      <span
+        style={{ cursor: "pointer" }}
+        onClick={() => {
+          onSubmit();
+          inputRef.current!.value = "";
+        }}
+      >
         {svgs.send}
       </span>
     </div>
@@ -339,12 +353,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   };
 
-  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSendMessage();
-    }
-  };
-
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     inputValueRef.current = e.target.value;
   };
@@ -414,7 +422,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       <ChatInput
         placeholder={isLoading ? "Thinking..." : "Ask Rigobot..."}
         inputValue={inputValueRef.current}
-        onKeyUp={handleKeyUp}
+        onEnterPressed={handleSendMessage}
         onSubmit={handleSendMessage}
         onInputChange={onInputChange}
       />
