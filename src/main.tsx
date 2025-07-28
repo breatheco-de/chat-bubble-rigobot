@@ -67,7 +67,7 @@ window.rigo = {
 
       this.options = options;
 
-      console.log("Initializing Rigobot with options: ", options);
+      console.log("Showing Rigobot with options: ", options);
 
       if (!this.root) {
         this.root = ReactDOMClient.createRoot(this.container);
