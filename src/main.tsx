@@ -272,6 +272,8 @@ window.rigo = {
       logger.error(
         "No user token provided, currently, only user token can be used to use a template"
       );
+      console.log("Current RigoAI options", this.options);
+
       return;
     }
 
