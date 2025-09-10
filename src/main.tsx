@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOMClient from "react-dom/client";
 
-import { Options, TAskJob, TAskToRigobot, TCompleteWithRigo } from "./types.ts";
+import { Options, TAgentLoop, TAgentJob, TAskJob, TAskToRigobot, TCompleteWithRigo, toolify, TTool } from "./types.ts";
 import { generateRandomId, logger, convertToHTML } from "./utils/utilities.ts";
 import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
 
@@ -15,9 +15,11 @@ interface Rigo {
   hide: () => void;
   ask: (TAskToRigobot: TAskToRigobot) => TAskJob | undefined;
   complete: (TCompleteWithRigo: TCompleteWithRigo) => void;
+  agentLoop: (params: TAgentLoop) => TAgentJob;
   // stopGeneration: () => void;
   on: (event: string, callback: (data: any) => void) => void;
   updateOptions: (newOptions: Options) => void;
+  convertTool: (func: any, name: string, description: string, parameters: any) => TTool;
 
   callbacks: {
     [key: string]: (data: any) => void;
@@ -217,6 +219,98 @@ window.rigo = {
     };
 
     return job;
+  },
+  agentLoop: function ({
+    task,
+    context,
+    tools,
+    onMessage,
+    onComplete,
+  }: TAgentLoop): TAgentJob {
+    logger.debug("Starting agent loop with task: ", task);
+
+    if (!task) {
+      logger.error("No task provided");
+      throw new Error("No task provided");
+    }
+
+    if (!this.token) {
+      logger.error(
+        "No token provided, call rigo.init first and provide a token"
+      )
+      throw new Error("No token provided");
+    }
+
+    let temporalSocket = io(
+      this.options?.socketHost ?? "https://ai.4geeks.com",
+      {
+        autoConnect: true,
+      }
+    );
+
+    // Handle agent waiting for tools
+    temporalSocket?.on("tool-call", async (data: any, ack: any) => {
+      logger.debug("Agent is executing tools: ", data) 
+      let result = [] 
+      for (const tool of data.tool_calls) {
+        // find the tool to call
+        const toolToCall = tools.find((t) => t.schema.function.name === tool.function.name);
+        if (toolToCall) {
+          const response = await toolToCall.function(JSON.parse(tool.function.arguments));
+          result.push({
+            tool_call_id: tool.id,
+            name: tool.function.name,
+            output: response
+          });
+        }
+      }
+      ack(result);
+    });
+
+    temporalSocket?.on("assistant-message", (data: any) => {
+      logger.info("Assistant message: ", data);
+      onMessage?.(data.message);
+    });
+    // Handle agent completion
+    temporalSocket?.on("agent-loop-completed", (data: any) => {
+      logger.info("Agent loop completed: ", data);
+      onComplete?.(data.status === "SUCCESS", data);
+    });
+    temporalSocket.on("agent-loop-started", (data, ack) => {
+      logger.debug("Agent loop started: ", data);
+      if (ack) ack(true);
+    });
+    
+
+    return {
+      stop: () => {
+          temporalSocket?.off("tool-call");
+        temporalSocket?.off("agent-loop-completed");
+        temporalSocket?.off("agent-loop-started");
+        temporalSocket?.disconnect();
+      },
+
+      run: () => {
+        temporalSocket.on("connect", () => {
+          logger.debug("Starting agent loop", tools);
+          temporalSocket?.emit("start_agent_loop", {
+            task,
+            tools: tools.map((tool) => tool.schema),
+            context,
+            purpose: {
+              slug: this.options?.purposeSlug,
+              id: this.options?.purposeId,
+            },
+            token: this.token,
+          });
+        });
+        temporalSocket.connect();
+      },
+    }
+  },
+
+  convertTool: function (func: any, name: string, description: string, parameters: any): TTool {
+    return toolify(func, name, description, parameters);
   },
 
   complete: function ({
