@@ -250,8 +250,8 @@ window.rigo = {
 
     // Handle agent waiting for tools
     temporalSocket?.on("tool-call", async (data: any, ack: any) => {
-      logger.debug("Agent is executing tools: ", data) 
-      let result = [] 
+      logger.debug("Agent is executing tools: ", data)
+      let result = []
       for (const tool of data.tool_calls) {
         // find the tool to call
         const toolToCall = tools.find((t) => t.schema.function.name === tool.function.name);
@@ -275,16 +275,17 @@ window.rigo = {
     temporalSocket?.on("agent-loop-completed", (data: any) => {
       logger.info("Agent loop completed: ", data);
       onComplete?.(data.status === "SUCCESS", data);
+      temporalSocket?.disconnect();
     });
     temporalSocket.on("agent-loop-started", (data, ack) => {
       logger.debug("Agent loop started: ", data);
       if (ack) ack(true);
     });
-    
 
     return {
       stop: () => {
-          temporalSocket?.off("tool-call");
+        temporalSocket?.off("tool-call");
+        temporalSocket?.off("assistant-message");
         temporalSocket?.off("agent-loop-completed");
         temporalSocket?.off("agent-loop-started");
         temporalSocket?.disconnect();

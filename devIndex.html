@@ -14,8 +14,31 @@
     <button onclick="stopGeneration()">Stop Generation</button>
     <button onclick="tryRigobot()">Try Rigobot</button>
     <button onclick="closeRigobot()">Close Rigobot</button>
+    <button onclick="runAgentLoop()">Run Agent Loop</button>
+    <button onclick="stopAgentLoop()">Stop Agent Loop</button>
+    <button onclick="changeBgColor()">Change Background Color</button>
+    <input type="color" id="colorPicker" value="#ffffff" style="margin-left: 10px;" />
     <div id="chat-target">
       <h1>An H1 in the target</h1>
+    </div>
+    <div id="agent-messages" style="margin: 20px; padding: 10px; border: 1px solid #ccc; min-height: 100px; background-color: #f5f5f5; max-width: 600px;">
+      <h3>Agent Chat</h3>
+      <div id="agent-content" style="height: 300px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background-color: #fff; border: 1px solid #ddd; border-radius: 5px;"></div>
+      <div style="display: flex; gap: 10px;">
+        <input 
+          type="text" 
+          id="agent-input" 
+          placeholder="Type your message here..."
+          style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;"
+          onkeypress="if(event.key === 'Enter') sendAgentMessage()"
+        />
+        <button 
+          onclick="sendAgentMessage()" 
+          style="padding: 8px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;"
+        >
+          Send
+        </button>
+      </div>
     </div>
 
     <div
@@ -24,22 +47,134 @@
     >
       asdasd
     </div>
-    <div
-      style="position: absolute; top: 50%; right: 50%"
-      class="centered-element"
-    >
-      centered element
-    </div>
-    <div
-      style="position: absolute; bottom: 0%; right: 50%"
-      class="bottom-left-element"
-    >
-      bottom left element
-    </div>
     <script type="module" src="/src/main.tsx"></script>
 
     <script>
       let job = null;
+      let agentJob = null;
+      let conversationHistory = [];
+      let baseTask = "You are a helpful assistant that can change the background color of this webpage. When the user asks you to change the background color, use the changeBackgroundColor tool with an appropriate color. Make sure to provide friendly responses and confirm when the color has been changed. You can also answer questions and have a conversation with the user.";
+
+      async function changeBackgroundColor(args) {
+        console.log("changeBackgroundColor", args);
+        const color = args.color;
+        return new Promise((resolve) => {
+          document.body.style.backgroundColor = color;
+          setTimeout(() => {
+            resolve(`Background color changed to ${color} successfully`);
+          }, 100);
+        });
+      }
+
+      function addMessageToChat(content, isUser = false) {
+        const agentContentDiv = document.querySelector("#agent-content");
+        if (!agentContentDiv) return;
+
+        const messageDiv = document.createElement("div");
+        messageDiv.style.padding = "10px";
+        messageDiv.style.margin = "5px 0";
+        messageDiv.style.backgroundColor = isUser ? "#e3f2fd" : "#fff";
+        messageDiv.style.borderRadius = "5px";
+        messageDiv.style.borderLeft = `3px solid ${isUser ? "#2196f3" : "#4caf50"}`;
+        
+        const label = isUser ? "You" : "Assistant";
+        messageDiv.innerHTML = `<strong>${label}:</strong> ${content}`;
+        
+        agentContentDiv.appendChild(messageDiv);
+        agentContentDiv.scrollTop = agentContentDiv.scrollHeight;
+      }
+
+      function runAgentLoop(userMessage = null) {
+        const agentContentDiv = document.querySelector("#agent-content");
+  
+
+        if (userMessage) {
+          conversationHistory.push({ role: "user", content: userMessage });
+        }
+
+        const changeBgTool = window.rigo.convertTool(
+          changeBackgroundColor,
+          "changeBackgroundColor",
+          "Changes the background color of the webpage. Accepts color names (like 'red', 'blue', 'green') or hex codes (like '#FF5733', '#3498db').",
+          {
+            color: {
+              type: "string",
+              description: "The color to set as the background. Can be a color name (e.g., 'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan') or a hex code (e.g., '#FF5733', '#3498db', '#2ecc71').",
+            },
+          }
+        );
+
+        let task = baseTask;
+        if (conversationHistory.length > 0) {
+          const conversationContext = conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join("\n");
+          task += `\n\nConversation history:\n${conversationContext}\n\nPlease respond to the user's latest message and continue the conversation.`;
+        }
+
+        agentJob = window.rigo.agentLoop({
+          task: task,
+          context: "You are running in a web browser. The user can interact with you to change the page background color or ask questions.",
+          tools: [changeBgTool],
+          onMessage: (message) => {
+            const content = message.content || (typeof message === "string" ? message : JSON.stringify(message));
+            if (content && typeof content === "string" && content.trim()) {
+              addMessageToChat(content, false);
+              conversationHistory.push({ role: "assistant", content: content });
+            }
+            console.log("Agent message:", message);
+          },
+          onComplete: (success, data) => {
+            console.log("Agent loop completed:", success, data);
+          },
+        });
+
+        agentJob.run();
+      }
+
+      function sendAgentMessage() {
+        const input = document.querySelector("#agent-input");
+        if (!input) return;
+
+        const message = input.value.trim();
+        if (!message) return;
+
+        addMessageToChat(message, true);
+        input.value = "";
+
+        if (!agentJob && conversationHistory.length === 0) {
+          addMessageToChat("Starting agent loop...", false);
+        }
+
+        runAgentLoop(message);
+      }
+
+      function stopAgentLoop() {
+        if (agentJob) {
+          agentJob.stop();
+          agentJob = null;
+          const agentContentDiv = document.querySelector("#agent-content");
+          if (agentContentDiv) {
+            const stopDiv = document.createElement("div");
+            stopDiv.style.padding = "10px";
+            stopDiv.style.margin = "5px 0";
+            stopDiv.style.backgroundColor = "#fff3cd";
+            stopDiv.style.borderRadius = "5px";
+            stopDiv.style.border = "1px solid #ffeeba";
+            stopDiv.innerHTML = "<strong>Agent Loop Stopped by user</strong>";
+            agentContentDiv.appendChild(stopDiv);
+          }
+          console.log("Agent loop stopped");
+        }
+      }
+
+      function changeBgColor() {
+        const colorPicker = document.querySelector("#colorPicker");
+        if (colorPicker) {
+          const color = colorPicker.value;
+          changeBackgroundColor(color);
+          console.log(`Background color changed to ${color}`);
+        }
+      }
+
       function moveRigo() {
         const possibilities = [
           ".bottom-left-element",
@@ -132,7 +267,7 @@
                 DOMTarget: "#chat-grow",
               },
             ],
-            // socketHost: "http://127.0.0.1:8000",
+            socketHost: "http://127.0.0.1:8003",
 
             // socketHost: "http://127.0.0.1:8003",
             context: "The user is called: Lulú",
@@ -143,8 +278,8 @@
 
           window.rigo.show({
             // target: "#bottom-element",
-            showBubble: true,
-            collapsed: false,
+            showBubble: false,            showBubble: false,
+            collapsed: true,
             highlight: true,
           });
 
