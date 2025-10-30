@@ -371,10 +371,15 @@ window.rigo = {
 
       return;
     }
+    const websocketHost = this.options?.socketHost ?? "https://ai.4geeks.com";
 
-    let temporalSocket = io(
-      this.options?.socketHost ?? "https://ai.4geeks.com"
-    );
+    console.log("Connecting to socket", websocketHost);
+
+    let temporalSocket = io(websocketHost, {
+      autoConnect: true,
+      transports: ["websocket", "polling"],
+      upgrade: true || false,
+    });
     const jobId = generateRandomId();
     let started = false;
 
