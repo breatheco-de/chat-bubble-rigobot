@@ -9,6 +9,10 @@ import packageJson from "../package.json";
 
 import io from "socket.io-client";
 
+function wait(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 interface Rigo {
   init: (token: string, options?: Options) => void;
   show: (params: Options) => void;
@@ -136,7 +140,11 @@ window.rigo = {
     }
 
     let temporalSocket = io(
-      this.options?.socketHost ?? "https://ai.4geeks.com"
+      this.options?.socketHost ?? "https://ai.4geeks.com", 
+      {
+        autoConnect: true,
+        transports: ["websocket", "polling"],
+      }
     );
 
     const jobId = generateRandomId();
@@ -245,6 +253,7 @@ window.rigo = {
       this.options?.socketHost ?? "https://ai.4geeks.com",
       {
         autoConnect: true,
+        transports: ["websocket", "polling"],
       }
     );
 
@@ -378,11 +387,18 @@ window.rigo = {
     let temporalSocket = io(websocketHost, {
       autoConnect: true,
       transports: ["websocket", "polling"],
-      upgrade: true || false,
     });
+
+    console.log("Temporal socket", temporalSocket);
+    
+    temporalSocket.connect();
+
+    temporalSocket.on("connect", () => {
+      console.log("Connected to socket");
+    });
+
     const jobId = generateRandomId();
     let started = false;
-
     temporalSocket?.on(`completion-stream-${jobId}`, (data: any) => {
       if (!started) {
         onStart?.({
@@ -422,7 +438,19 @@ window.rigo = {
         temporalSocket?.disconnect();
       },
 
-      run: () => {
+      run: async () => {
+        temporalSocket.emit("hello", "world");
+        if (!temporalSocket.connected) {
+          console.log("Waiting for connection");
+        }
+
+        while (!temporalSocket.connected) {
+          console.log("Waiting for connection");
+          await wait(1000);
+        }
+
+        console.log("Connected to socket after waiting", temporalSocket.connected);
+        
         temporalSocket?.emit("complete", {
           jobId,
           inputs: payload,

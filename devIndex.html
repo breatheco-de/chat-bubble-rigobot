@@ -225,8 +225,8 @@
 
           target: target,
           format: "html",
-          onComplete: (data) => {
-            console.log("onComplete", data);
+          onComplete: (success, data) => {
+            console.log("onComplete", success, data);
           },
         });
 
@@ -267,7 +267,7 @@
                 DOMTarget: "#chat-grow",
               },
             ],
-            socketHost: "http://127.0.0.1:8003",
+            // socketHost: "http://127.0.0.1:8003",
 
             // socketHost: "http://127.0.0.1:8003",
             context: "The user is called: Lulú",
