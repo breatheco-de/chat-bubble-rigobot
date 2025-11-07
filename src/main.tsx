@@ -8,6 +8,7 @@ import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
 import packageJson from "../package.json";
 
 import io from "socket.io-client";
+import Pusher from "pusher-js";
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -548,12 +549,6 @@ window.rigo = {
 
       run: async () => {
         try {
-          const Pusher = (await import("pusher-js")).default;
-
-          pusherClient = new Pusher(pusherKey, {
-            cluster: pusherCluster,
-          });
-
           const response = await fetch(
             `${apiHost}/v1/prompting/use-template/${templateSlug}/`,
             {
@@ -602,6 +597,10 @@ window.rigo = {
             onComplete?.(true, data.data);
             return;
           }
+
+          pusherClient = new Pusher(pusherKey, {
+            cluster: pusherCluster,
+          });
 
           const channelName = `completion-job-${jobId}`;
           channel = pusherClient.subscribe(channelName);
