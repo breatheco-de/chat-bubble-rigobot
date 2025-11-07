@@ -95,6 +95,9 @@ export interface Options {
     context?: string;
   };
   socketHost?: string;
+  pusherKey?: string;
+  pusherCluster?: string;
+  apiHost?: string;
 }
 
 export interface RigobotProps {
@@ -222,6 +225,15 @@ export interface TCompleteWithRigo {
   onComplete?: (success: boolean, data: any) => void;
   onStart?: (data: TOnStartData) => void;
   onStream?: (data: TOnStreamData) => void;
+}
+
+export interface TUseTemplateWithRigo {
+  templateSlug: string;
+  payload?: { [key: string]: string };
+  format?: "html" | "markdown";
+  target?: HTMLElement;
+  onComplete?: (success: boolean, data: any) => void;
+  onStart?: (data: TOnStartData) => void;
 }
 
 export type TAskJob = {

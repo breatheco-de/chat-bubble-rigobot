@@ -11,6 +11,7 @@
     <button onclick="moveRigo()">Move RIgo</button>
     <button onclick="askRigobot()">Ask Rigobot</button>
     <button onclick="completeRigobot()">Complete Rigobot</button>
+    <button onclick="useTemplateRigobot()">Use Template Rigobot</button>
     <button onclick="stopGeneration()">Stop Generation</button>
     <button onclick="tryRigobot()">Try Rigobot</button>
     <button onclick="closeRigobot()">Close Rigobot</button>
@@ -233,6 +234,28 @@
         job?.run();
       }
 
+      async function useTemplateRigobot() {
+        const target = document.querySelector("#chat-target");
+
+        const prompt = await window.prompt("Enter a name");
+        job = window.rigo.use_template({
+          templateSlug: "testing-prompt",
+          payload: {
+            user_name: prompt,
+          },
+          target: target,
+          format: "html",
+          onStart: (data) => {
+            console.log("Template completion started:", data);
+          },
+          onComplete: (success, data) => {
+            console.log("onComplete", success, data);
+          },
+        });
+
+        job?.run();
+      }
+
       function tryRigobot(targetId) {
         window.rigo.updateOptions({
           showBubble: true,
@@ -272,8 +295,12 @@
             // socketHost: "http://127.0.0.1:8003",
             context: "The user is called: Lulú",
             user: {
-              token: "0e2137217a1814f69c5619dc8371c428d4b4ada8",
+              token: "ba8158886ff2081904459a3e9488560a2965866f",
             },
+            pusherKey: "609743b48b8ed073d67f",
+            pusherCluster: "us2",
+            // apiHost: "http://localhost:8001",
+            apiHost: "https://rigobot-test-cca7d841c9d8.herokuapp.com",
           });
 
           window.rigo.show({

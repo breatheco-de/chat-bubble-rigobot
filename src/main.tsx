@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOMClient from "react-dom/client";
 
-import { Options, TAgentLoop, TAgentJob, TAskJob, TAskToRigobot, TCompleteWithRigo, toolify, TTool } from "./types.ts";
+import { Options, TAgentLoop, TAgentJob, TAskJob, TAskToRigobot, TCompleteWithRigo, TUseTemplateWithRigo, toolify, TTool } from "./types.ts";
 import { generateRandomId, logger, convertToHTML } from "./utils/utilities.ts";
 import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
 
@@ -19,6 +19,7 @@ interface Rigo {
   hide: () => void;
   ask: (TAskToRigobot: TAskToRigobot) => TAskJob | undefined;
   complete: (TCompleteWithRigo: TCompleteWithRigo) => void;
+  use_template: (TUseTemplateWithRigo: TUseTemplateWithRigo) => TAskJob | undefined;
   agentLoop: (params: TAgentLoop) => TAgentJob;
   // stopGeneration: () => void;
   on: (event: string, callback: (data: any) => void) => void;
@@ -465,6 +466,188 @@ window.rigo = {
             id: this.options?.purposeId,
           },
         });
+      },
+    };
+
+    return job;
+  },
+
+  use_template: function ({
+    templateSlug,
+    payload = {},
+    format = "html",
+    target,
+    onComplete,
+    onStart,
+  }: TUseTemplateWithRigo) {
+    logger.debug("Using template with Pusher");
+
+    if (!templateSlug) {
+      logger.error("No template slug provided");
+      onComplete?.(false, { error: "No template slug provided" });
+      return;
+    }
+
+    if (!target && !onComplete) {
+      logger.error(
+        "No target or onComplete provided, please set one of them to use the use_template method"
+      );
+      return;
+    }
+
+    if (target && !(target instanceof HTMLElement)) {
+      logger.error("Target is not an HTMLElement");
+      onComplete?.(false, {
+        error: "Target is not an HTMLElement",
+      });
+      return;
+    }
+
+    if (!payload) {
+      logger.error("No payload provided");
+      onComplete?.(false, { error: "No payload provided" });
+      return;
+    }
+
+    if (!validFormats.includes(format)) {
+      logger.error(
+        `Invalid format ${format} provided, valid formats are: ${validFormats.join(
+          ", "
+        )}`
+      );
+      onComplete?.(false, { error: `Invalid format ${format} provided` });
+      return;
+    }
+
+    if (!this.options?.user?.token) {
+      logger.error(
+        "No user token provided, currently, only user token can be used to use a template"
+      );
+      console.log("Current RigoAI options", this.options);
+      return;
+    }
+
+    const apiHost = this.options?.apiHost ?? "https://rigobot.herokuapp.com";
+    const pusherKey = this.options?.pusherKey ?? "609743b48b8ed073d67f";
+    const pusherCluster = this.options?.pusherCluster ?? "us2";
+
+    let pusherClient: any = null;
+    let channel: any = null;
+    let started = false;
+
+    const job: TAskJob = {
+      stop: () => {
+        if (channel) {
+          channel.unbind_all();
+          channel.unsubscribe();
+        }
+        if (pusherClient) {
+          pusherClient.disconnect();
+        }
+      },
+
+      run: async () => {
+        try {
+          const Pusher = (await import("pusher-js")).default;
+
+          pusherClient = new Pusher(pusherKey, {
+            cluster: pusherCluster,
+          });
+
+          const response = await fetch(
+            `${apiHost}/v1/prompting/use-template/${templateSlug}/`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Token ${this.options?.user?.token}`,
+              },
+              body: JSON.stringify({
+                inputs: payload,
+                include_purpose_objective: false,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            onComplete?.(false, {
+              error: errorData.detail || `HTTP error! status: ${response.status}`,
+            });
+            return;
+          }
+
+          const data = await response.json();
+          const jobId = data.id;
+
+          if (!jobId) {
+            logger.error("No job ID returned from API");
+            onComplete?.(false, { error: "No job ID returned from API" });
+            return;
+          }
+
+          if (data.data) {
+            onStart?.({
+              when: new Date().toISOString(),
+              url: window.location.href,
+            });
+            started = true;
+
+            if (target && format === "markdown") {
+              target.innerHTML = convertToHTML(data.data.answer || "");
+            } else if (target && format === "html") {
+              target.innerHTML = convertToHTML(data.data.answer || "");
+            }
+
+            onComplete?.(true, data.data);
+            return;
+          }
+
+          const channelName = `completion-job-${jobId}`;
+          channel = pusherClient.subscribe(channelName);
+
+          channel.bind("completion", (eventData: any) => {
+            if (!started) {
+              onStart?.({
+                when: new Date().toISOString(),
+                url: window.location.href,
+              });
+              started = true;
+            }
+
+            if (eventData.status === "SUCCESS" || eventData.status === "ERROR") {
+              if (target && format === "markdown") {
+                target.innerHTML = convertToHTML(eventData.answer || "");
+              } else if (target && format === "html") {
+                target.innerHTML = convertToHTML(eventData.answer || "");
+              }
+
+              const success = eventData.status === "SUCCESS";
+              onComplete?.(success, eventData);
+
+              channel.unbind_all();
+              channel.unsubscribe();
+              pusherClient.disconnect();
+            }
+          });
+
+          pusherClient.connection.bind("error", (err: any) => {
+            logger.error("Pusher connection error:", err);
+            onComplete?.(false, { error: "Pusher connection error" });
+          });
+
+          pusherClient.connection.bind("disconnected", () => {
+            logger.debug("Pusher disconnected");
+          });
+        } catch (error: any) {
+          logger.error("Error in use_template:", error);
+          onComplete?.(false, {
+            error: error.message || "Unknown error occurred",
+          });
+          if (pusherClient) {
+            pusherClient.disconnect();
+          }
+        }
       },
     };
 
