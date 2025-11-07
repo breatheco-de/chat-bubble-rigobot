@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOMClient from "react-dom/client";
 
+type PusherConstructor = typeof import("pusher-js").default;
 import { Options, TAgentLoop, TAgentJob, TAskJob, TAskToRigobot, TCompleteWithRigo, TUseTemplateWithRigo, toolify, TTool } from "./types.ts";
 import { generateRandomId, logger, convertToHTML } from "./utils/utilities.ts";
 import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
@@ -8,10 +9,75 @@ import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
 import packageJson from "../package.json";
 
 import io from "socket.io-client";
-import Pusher from "pusher-js";
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+declare global {
+  interface Window {
+    Pusher?: PusherConstructor;
+    __rigoPusherPromise?: Promise<PusherConstructor>;
+  }
+}
+
+async function loadPusher(): Promise<PusherConstructor> {
+  if (typeof window === "undefined") {
+    throw new Error("Pusher can only be loaded in the browser");
+  }
+
+  if (window.Pusher) {
+    return window.Pusher;
+  }
+
+  if (window.__rigoPusherPromise) {
+    return window.__rigoPusherPromise;
+  }
+
+  window.__rigoPusherPromise = new Promise((resolve, reject) => {
+    const existingScript = document.querySelector<HTMLScriptElement>('script[data-rigo="pusher"]');
+
+    if (existingScript) {
+      existingScript.addEventListener("load", () => {
+        if (window.Pusher) {
+          resolve(window.Pusher!);
+        } else {
+          reject(new Error("Pusher failed to load"));
+        }
+      });
+
+      existingScript.addEventListener("error", () => {
+        reject(new Error("Failed to load existing Pusher script"));
+      });
+
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://js.pusher.com/8.4.0/pusher.min.js";
+    script.async = true;
+    script.dataset.rigo = "pusher";
+
+    script.onload = () => {
+      if (window.Pusher) {
+        resolve(window.Pusher!);
+      } else {
+        reject(new Error("Pusher global not available after script load"));
+      }
+    };
+
+    script.onerror = () => {
+      reject(new Error("Failed to load Pusher script"));
+    };
+
+    document.head.appendChild(script);
+  });
+
+  window.__rigoPusherPromise.catch(() => {
+    window.__rigoPusherPromise = undefined;
+  });
+
+  return window.__rigoPusherPromise;
 }
 
 interface Rigo {
@@ -598,7 +664,9 @@ window.rigo = {
             return;
           }
 
-          pusherClient = new Pusher(pusherKey, {
+          const PusherLib = await loadPusher();
+
+          pusherClient = new PusherLib(pusherKey, {
             cluster: pusherCluster,
           });
 
