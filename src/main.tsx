@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOMClient from "react-dom/client";
 
 type PusherConstructor = typeof import("pusher-js").default;
-import { Options, TAgentLoop, TAgentJob, TAskJob, TAskToRigobot, TCompleteWithRigo, TUseTemplateWithRigo, toolify, TTool } from "./types.ts";
+import { Options, TAgentLoop, TAgentJob, TAskJob, TAskToRigobot, TCompleteWithRigo, TUseTemplateWithRigo, toolify, TTool, TRunAgent } from "./types.ts";
 import { generateRandomId, logger, convertToHTML } from "./utils/utilities.ts";
 import { Rigobot } from "./components/Rigobot/Rigobot.tsx";
 
@@ -88,6 +88,7 @@ interface Rigo {
   complete: (TCompleteWithRigo: TCompleteWithRigo) => void;
   use_template: (TUseTemplateWithRigo: TUseTemplateWithRigo) => TAskJob | undefined;
   agentLoop: (params: TAgentLoop) => TAgentJob;
+  agent: (params: TRunAgent) => TAgentJob;
   // stopGeneration: () => void;
   on: (event: string, callback: (data: any) => void) => void;
   updateOptions: (newOptions: Options) => void;
@@ -385,6 +386,156 @@ window.rigo = {
         temporalSocket.connect();
       },
     }
+  },
+
+  agent: function ({
+    slug,
+    payload = {},
+    onEvent,
+    onComplete,
+  }: TRunAgent): TAgentJob {
+    if (!slug) {
+      const error = "No agent slug provided";
+      logger.error(error);
+      onEvent?.({ type: "error", data: { error, m: error } });
+      onComplete?.(false, { error });
+      return { stop: () => {}, run: () => {} };
+    }
+
+    const apiHost = (this.options?.apiHost ?? "https://rigobot.herokuapp.com").replace(/\/+$/, "");
+
+    // This endpoint requires an authenticated user token (Authorization: Token ...)
+    const userToken = this.options?.user?.token ?? this.token;
+    if (!userToken) {
+      const error = "No token provided. Set rigo.init(token) or options.user.token";
+      logger.error(error);
+      onEvent?.({ type: "error", data: { error, m: error } });
+      onComplete?.(false, { error });
+      return { stop: () => {}, run: () => {} };
+    }
+
+    const pusherKey = this.options?.pusherKey;
+    const pusherCluster = this.options?.pusherCluster;
+    if (!pusherKey || !pusherCluster) {
+      const error = "Missing Pusher config. Provide options.pusherKey and options.pusherCluster";
+      logger.error(error);
+      onEvent?.({ type: "error", data: { error, m: error } });
+      onComplete?.(false, { error });
+      return { stop: () => {}, run: () => {} };
+    }
+
+    const endpoint = `${apiHost}/v2/learnpack/agent/${encodeURIComponent(slug)}/`;
+
+    let pusher: any | undefined;
+    let channel: any | undefined;
+    let isStopped = false;
+
+    const stop = () => {
+      isStopped = true;
+      try {
+        if (channel) {
+          channel.unbind_all();
+          channel.unsubscribe();
+        }
+      } catch (e) {
+        // noop
+      }
+      try {
+        pusher?.disconnect?.();
+      } catch (e) {
+        // noop
+      }
+    };
+
+    const run = () => {
+      void (async () => {
+        try {
+          const resp = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Token ${userToken}`,
+            },
+            body: JSON.stringify(payload ?? {}),
+          });
+
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok) {
+            const error = (data && (data.detail || data.error || data.message)) || `Agent request failed (${resp.status})`;
+            throw new Error(typeof error === "string" ? error : "Agent request failed");
+          }
+
+          const agentRunUrl = data?.agent_run;
+          if (!agentRunUrl || typeof agentRunUrl !== "string") {
+            throw new Error("Missing agent_run in response");
+          }
+
+          const match = agentRunUrl.match(/agent-run\/([0-9a-f-]{36})/i);
+          const runId = match?.[1];
+          if (!runId) {
+            throw new Error("Could not extract run_id from agent_run URL");
+          }
+
+          onEvent?.({
+            type: "started",
+            data: { run_id: runId, url: agentRunUrl, m: `Agent started: ${slug}` },
+          });
+
+          if (isStopped) return;
+
+          const Pusher = await loadPusher();
+          pusher = new Pusher(pusherKey, { cluster: pusherCluster });
+          channel = pusher.subscribe(`agent-run-${runId}`);
+
+          channel.bind("tool-call", (ev: any) => {
+            if (isStopped) return;
+            const toolName = ev?.tool_name ?? ev?.tool ?? "tool";
+            onEvent?.({
+              type: "tool-call",
+              data: {
+                run_id: runId,
+                tool_name: toolName,
+                iteration: ev?.iteration,
+                timestamp: ev?.timestamp,
+                url: agentRunUrl,
+                m: `Tool call: ${toolName}`,
+              },
+            });
+          });
+
+          channel.bind("agent-completed", (ev: any) => {
+            if (isStopped) return;
+            const status = ev?.status === "SUCCESS" ? "SUCCESS" : "ERROR";
+            const finalMessage = ev?.final_message ?? ev?.finalMessage ?? null;
+
+            onEvent?.({
+              type: "agent-completed",
+              data: {
+                run_id: runId,
+                status,
+                final_message: finalMessage,
+                error_message: ev?.error_message,
+                iteration: ev?.iteration,
+                timestamp: ev?.timestamp,
+                url: agentRunUrl,
+                m: status === "SUCCESS" ? "Agent completed" : "Agent completed with error",
+              },
+            });
+
+            onComplete?.(status === "SUCCESS", ev);
+            stop();
+          });
+        } catch (e: any) {
+          const error = e?.message ? String(e.message) : "Unknown error running agent";
+          logger.error("Error running agent", e);
+          onEvent?.({ type: "error", data: { error, m: error } });
+          onComplete?.(false, { error });
+          stop();
+        }
+      })();
+    };
+
+    return { stop, run };
   },
 
   convertTool: function (func: any, name: string, description: string, parameters: any): TTool {

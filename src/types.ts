@@ -211,6 +211,46 @@ export type TAgentJob = {
   run: () => void;
 };
 
+export type TAgentRunStatus = "SUCCESS" | "ERROR";
+
+export type TAgentRunEvent =
+  | {
+      type: "started";
+      data: { run_id: string; url: string; m: string };
+    }
+  | {
+      type: "tool-call";
+      data: {
+        run_id: string;
+        tool_name?: string;
+        iteration?: number;
+        timestamp?: string;
+        m: string;
+        url: string;
+      };
+    }
+  | {
+      type: "agent-completed";
+      data: {
+        run_id: string;
+        status: TAgentRunStatus;
+        final_message?: string | null;
+        error_message?: string;
+        iteration?: number;
+        timestamp?: string;
+        m: string;
+        url: string;
+      };
+    }
+  | { type: "error"; data: { error: string; m: string } };
+
+export interface TRunAgent {
+  slug: string;
+  payload?: Record<string, any>;
+  onEvent?: (event: TAgentRunEvent) => void;
+  onComplete?: (success: boolean, data: any) => void;
+}
+
 type TOnStreamData = {
   chunk: string;
   cumulative: string;

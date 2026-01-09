@@ -17,6 +17,8 @@
     <button onclick="closeRigobot()">Close Rigobot</button>
     <button onclick="runAgentLoop()">Run Agent Loop</button>
     <button onclick="stopAgentLoop()">Stop Agent Loop</button>
+    <button onclick="runLearnpackAgent()">Run Agent (v2 learnpack)</button>
+    <button onclick="stopLearnpackAgent()">Stop Agent (v2 learnpack)</button>
     <button onclick="changeBgColor()">Change Background Color</button>
     <input type="color" id="colorPicker" value="#ffffff" style="margin-left: 10px;" />
     <div id="chat-target">
@@ -53,6 +55,7 @@
     <script>
       let job = null;
       let agentJob = null;
+      let learnpackAgentJob = null;
       let conversationHistory = [];
       let baseTask = "You are a helpful assistant that can change the background color of this webpage. When the user asks you to change the background color, use the changeBackgroundColor tool with an appropriate color. Make sure to provide friendly responses and confirm when the color has been changed. You can also answer questions and have a conversation with the user.";
 
@@ -164,6 +167,61 @@
             agentContentDiv.appendChild(stopDiv);
           }
           console.log("Agent loop stopped");
+        }
+      }
+
+      function runLearnpackAgent() {
+        const slug = window.prompt("Enter the learnpack agent slug to run (v2/learnpack/agent/<slug>/):");
+        if (!slug) return;
+
+        const defaultPayload = "{}";
+        const rawPayload = window.prompt(
+          "Paste JSON payload for the agent (leave as {} to test connectivity):",
+          defaultPayload
+        );
+
+        let payload = {};
+        try {
+          payload = rawPayload ? JSON.parse(rawPayload) : {};
+        } catch (e) {
+          addMessageToChat("Invalid JSON payload. Please try again.", false);
+          return;
+        }
+
+        const target = document.querySelector("#agent-content");
+        addMessageToChat(`Starting learnpack agent: ${slug}`, false);
+
+        learnpackAgentJob = window.rigo.agent({
+          slug,
+          payload,
+          target,
+          format: "markdown",
+          onEvent: (event) => {
+            if (!event || !event.type) return;
+            if (event.type === "error") {
+              addMessageToChat(`ERROR: ${event.data?.m || event.data?.error || "Unknown error"}`, false);
+              return;
+            }
+            addMessageToChat(event.data?.m || `[${event.type}]`, false);
+            if (event.type === "agent-completed") {
+              const msg = event.data?.final_message;
+              if (msg) addMessageToChat(String(msg), false);
+            }
+          },
+          onComplete: (success, data) => {
+            console.log("Learnpack agent completed:", success, data);
+          },
+        });
+
+        learnpackAgentJob.run();
+      }
+
+      function stopLearnpackAgent() {
+        if (learnpackAgentJob) {
+          learnpackAgentJob.stop();
+          learnpackAgentJob = null;
+          addMessageToChat("Learnpack agent stopped by user", false);
+          console.log("Learnpack agent stopped");
         }
       }
 
@@ -295,17 +353,17 @@
             // socketHost: "http://127.0.0.1:8003",
             context: "The user is called: Lulú",
             user: {
-              token: "ba8158886ff2081904459a3e9488560a2965866f",
+              token: "0e2137217a1814f69c5619dc8371c428d4b4ada8",
             },
-            pusherKey: "609743b48b8ed073d67f",
-            pusherCluster: "us2",
+            pusherKey: "085fabde5864ef790a61",
+            pusherCluster: "mt1",
             // apiHost: "http://localhost:8001",
-            apiHost: "https://rigobot-test-cca7d841c9d8.herokuapp.com",
+            apiHost: "https://rigobot.herokuapp.com",
           });
 
           window.rigo.show({
             // target: "#bottom-element",
-            showBubble: false,            showBubble: false,
+            showBubble: false,
             collapsed: true,
             highlight: true,
           });
