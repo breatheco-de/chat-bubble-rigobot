@@ -88,6 +88,34 @@
         agentContentDiv.scrollTop = agentContentDiv.scrollHeight;
       }
 
+      function addJsonToChat(obj, label = "AgentRun") {
+        const agentContentDiv = document.querySelector("#agent-content");
+        if (!agentContentDiv) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.style.padding = "10px";
+        wrapper.style.margin = "5px 0";
+        wrapper.style.backgroundColor = "#fff";
+        wrapper.style.borderRadius = "5px";
+        wrapper.style.borderLeft = "3px solid #9c27b0";
+
+        const title = document.createElement("div");
+        title.innerHTML = `<strong>${label}:</strong>`;
+        title.style.marginBottom = "6px";
+
+        const pre = document.createElement("pre");
+        pre.style.whiteSpace = "pre-wrap";
+        pre.style.wordBreak = "break-word";
+        pre.style.margin = "0";
+        pre.style.fontSize = "12px";
+        pre.textContent = JSON.stringify(obj, null, 2);
+
+        wrapper.appendChild(title);
+        wrapper.appendChild(pre);
+        agentContentDiv.appendChild(wrapper);
+        agentContentDiv.scrollTop = agentContentDiv.scrollHeight;
+      }
+
       function runAgentLoop(userMessage = null) {
         const agentContentDiv = document.querySelector("#agent-content");
   
@@ -188,14 +216,11 @@
           return;
         }
 
-        const target = document.querySelector("#agent-content");
         addMessageToChat(`Starting learnpack agent: ${slug}`, false);
 
         learnpackAgentJob = window.rigo.agent({
           slug,
           payload,
-          target,
-          format: "markdown",
           onEvent: (event) => {
             if (!event || !event.type) return;
             if (event.type === "error") {
@@ -203,9 +228,10 @@
               return;
             }
             addMessageToChat(event.data?.m || `[${event.type}]`, false);
-            if (event.type === "agent-completed") {
-              const msg = event.data?.final_message;
-              if (msg) addMessageToChat(String(msg), false);
+
+            // NEW: dump full AgentRun details whenever available
+            if (event.data?.agent_run) {
+              addJsonToChat(event.data.agent_run, `AgentRun (${event.type})`);
             }
           },
           onComplete: (success, data) => {

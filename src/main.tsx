@@ -476,9 +476,56 @@ window.rigo = {
             throw new Error("Could not extract run_id from agent_run URL");
           }
 
+          const fetchAgentRunDetail = async () => {
+            // Prefer the URL returned by the API, but fall back to v2 if needed.
+            const tryUrls = [
+              agentRunUrl,
+              `${apiHost}/v2/prompting/agent/run/${runId}/`,
+            ];
+
+            let lastError: any = null;
+            for (const url of tryUrls) {
+              try {
+                const r = await fetch(url, {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Token ${userToken}`,
+                  },
+                });
+
+                const j = await r.json().catch(() => ({}));
+                if (!r.ok) {
+                  const msg =
+                    (j && (j.detail || j.error || j.message)) ||
+                    `Failed to fetch agent run (${r.status})`;
+                  throw new Error(typeof msg === "string" ? msg : "Failed to fetch agent run");
+                }
+
+                return j;
+              } catch (e) {
+                lastError = e;
+              }
+            }
+
+            throw lastError || new Error("Failed to fetch agent run");
+          };
+
+          let agentRunDetail: any = undefined;
+          try {
+            agentRunDetail = await fetchAgentRunDetail();
+          } catch (e) {
+            // Non-fatal: we can still stream minimal events
+            logger.debug("Could not fetch agent run details on start", e);
+          }
+
           onEvent?.({
             type: "started",
-            data: { run_id: runId, url: agentRunUrl, m: `Agent started: ${slug}` },
+            data: {
+              run_id: runId,
+              url: agentRunUrl,
+              m: `Agent started: ${slug}`,
+              agent_run: agentRunDetail,
+            },
           });
 
           if (isStopped) return;
@@ -488,42 +535,65 @@ window.rigo = {
           channel = pusher.subscribe(`agent-run-${runId}`);
 
           channel.bind("tool-call", (ev: any) => {
-            if (isStopped) return;
-            const toolName = ev?.tool_name ?? ev?.tool ?? "tool";
-            onEvent?.({
-              type: "tool-call",
-              data: {
-                run_id: runId,
-                tool_name: toolName,
-                iteration: ev?.iteration,
-                timestamp: ev?.timestamp,
-                url: agentRunUrl,
-                m: `Tool call: ${toolName}`,
-              },
-            });
+            void (async () => {
+              if (isStopped) return;
+              const toolName = ev?.tool_name ?? ev?.tool ?? "tool";
+
+              let detail: any = undefined;
+              try {
+                detail = await fetchAgentRunDetail();
+              } catch (e) {
+                logger.debug("Could not fetch agent run details on tool-call", e);
+              }
+
+              if (isStopped) return;
+              onEvent?.({
+                type: "tool-call",
+                data: {
+                  run_id: runId,
+                  tool_name: toolName,
+                  iteration: ev?.iteration,
+                  timestamp: ev?.timestamp,
+                  url: agentRunUrl,
+                  m: `Tool call: ${toolName}`,
+                  agent_run: detail,
+                },
+              });
+            })();
           });
 
           channel.bind("agent-completed", (ev: any) => {
-            if (isStopped) return;
-            const status = ev?.status === "SUCCESS" ? "SUCCESS" : "ERROR";
-            const finalMessage = ev?.final_message ?? ev?.finalMessage ?? null;
+            void (async () => {
+              if (isStopped) return;
+              const status = ev?.status === "SUCCESS" ? "SUCCESS" : "ERROR";
+              const finalMessage = ev?.final_message ?? ev?.finalMessage ?? null;
 
-            onEvent?.({
-              type: "agent-completed",
-              data: {
-                run_id: runId,
-                status,
-                final_message: finalMessage,
-                error_message: ev?.error_message,
-                iteration: ev?.iteration,
-                timestamp: ev?.timestamp,
-                url: agentRunUrl,
-                m: status === "SUCCESS" ? "Agent completed" : "Agent completed with error",
-              },
-            });
+              let detail: any = undefined;
+              try {
+                detail = await fetchAgentRunDetail();
+              } catch (e) {
+                logger.debug("Could not fetch agent run details on completion", e);
+              }
 
-            onComplete?.(status === "SUCCESS", ev);
-            stop();
+              if (isStopped) return;
+              onEvent?.({
+                type: "agent-completed",
+                data: {
+                  run_id: runId,
+                  status,
+                  final_message: finalMessage,
+                  error_message: ev?.error_message,
+                  iteration: ev?.iteration,
+                  timestamp: ev?.timestamp,
+                  url: agentRunUrl,
+                  m: status === "SUCCESS" ? "Agent completed" : "Agent completed with error",
+                  agent_run: detail,
+                },
+              });
+
+              onComplete?.(status === "SUCCESS", detail ?? ev);
+              stop();
+            })();
           });
         } catch (e: any) {
           const error = e?.message ? String(e.message) : "Unknown error running agent";

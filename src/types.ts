@@ -213,10 +213,12 @@ export type TAgentJob = {
 
 export type TAgentRunStatus = "SUCCESS" | "ERROR";
 
+export type TAgentRunDetail = Record<string, any>;
+
 export type TAgentRunEvent =
   | {
       type: "started";
-      data: { run_id: string; url: string; m: string };
+      data: { run_id: string; url: string; m: string; agent_run?: TAgentRunDetail };
     }
   | {
       type: "tool-call";
@@ -227,6 +229,7 @@ export type TAgentRunEvent =
         timestamp?: string;
         m: string;
         url: string;
+        agent_run?: TAgentRunDetail;
       };
     }
   | {
@@ -240,6 +243,7 @@ export type TAgentRunEvent =
         timestamp?: string;
         m: string;
         url: string;
+        agent_run?: TAgentRunDetail;
       };
     }
   | { type: "error"; data: { error: string; m: string } };
