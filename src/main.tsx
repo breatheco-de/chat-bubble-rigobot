@@ -470,6 +470,8 @@ window.rigo = {
             throw new Error("Missing agent_run in response");
           }
 
+          const extraFromStart = (data && typeof data === "object") ? data.extra : undefined;
+
           const match = agentRunUrl.match(/agent-run\/([0-9a-f-]{36})/i);
           const runId = match?.[1];
           if (!runId) {
@@ -525,6 +527,7 @@ window.rigo = {
               url: agentRunUrl,
               m: `Agent started: ${slug}`,
               agent_run: agentRunDetail,
+              extra: extraFromStart,
             },
           });
 
@@ -557,6 +560,7 @@ window.rigo = {
                   url: agentRunUrl,
                   m: `Tool call: ${toolName}`,
                   agent_run: detail,
+                  extra: extraFromStart,
                 },
               });
             })();
@@ -588,6 +592,7 @@ window.rigo = {
                   url: agentRunUrl,
                   m: status === "SUCCESS" ? "Agent completed" : "Agent completed with error",
                   agent_run: detail,
+                  extra: extraFromStart,
                 },
               });
 
